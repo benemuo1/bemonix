@@ -153,10 +153,10 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 
 footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align:center;font-size:.6rem;color:var(--muted);letter-spacing:.2em;flex-shrink:0}
 
-/* PAGE TRANSITION — a full-screen wine-colored curtain that sweeps up to
-   cover the viewport before an internal navigation actually happens (see
-   "HERO — page transition" in <script>), instead of the browser's own
-   harsh unstyled reload. Starts translateY(100%) (parked just below the
+/* PAGE TRANSITION — a full-screen curtain that sweeps up to cover the
+   viewport before an internal navigation actually happens (see "HERO —
+   page transition" in <script>), instead of the browser's own harsh
+   unstyled reload. Starts translateY(100%) (parked just below the
    viewport, invisible) since THIS page is the departure side of the
    transition — showcase.html's copy of this block starts at translateY(0)
    (already covering) since it's the arrival side; the two together read
@@ -169,13 +169,13 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
    exact same crop (aspect-ratio 1280/420, object-fit:cover) and edge
    mask-image as .hero-logo below, since it's a still of that same video —
    the mask feathers the still's own flat cream background out to
-   transparent at the edges so it dissolves into the curtain instead of
-   showing a hard rectangle, while the dark linework at its center (where
-   the mask stays opaque) stays fully legible against the wine background
-   rather than blending into it. Kept opacity:0 until the cover sweep
-   finishes, THEN faded in (see "HERO — page transition" script) — it
-   shouldn't appear mid-sweep. */
-.page-transition{position:fixed;inset:0;z-index:9999;background:#761941;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(100%)}
+   transparent at the edges, and the curtain's own background (#fbf2e0) is
+   sampled directly from that same still's background, so the two match
+   exactly and the still's edges disappear into the curtain with zero
+   visible seam, leaving just the dark linework floating on the curtain.
+   Kept opacity:0 until the cover sweep finishes, THEN faded in (see
+   "HERO — page transition" script) — it shouldn't appear mid-sweep. */
+.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(100%)} /* sampled from .pt-frame's own background (see hero-video-lastframe.png) so the still's edges — already feathered transparent by its mask-image — disappear into the curtain with zero visible seam */
 .pt-frame{width:clamp(320px,42vw,560px);aspect-ratio:1280/420;object-fit:cover;object-position:center;opacity:0;-webkit-mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%);mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%)}
 </style>
 </head>
@@ -259,7 +259,7 @@ gsap.fromTo('.hero-bar',        {scaleX:0},        {scaleX:1, duration:1, delay:
 gsap.fromTo('.hero-cta a',      {y:20, opacity:0}, {y:0, opacity:1, stagger:.12, duration:.7, delay:1.6});
 
 // ── HERO — page transition (View Our Work → showcase.html) ────────────────────
-// Instead of the browser's harsh unstyled reload, play the wine curtain
+// Instead of the browser's harsh unstyled reload, play the curtain
 // (#pageTransition, see its CSS comment) sweeping up to fully cover the
 // screen, THEN fade in .pt-frame (only once the cover is complete, so it
 // never appears mid-sweep), hold briefly, THEN navigate. showcase.html's

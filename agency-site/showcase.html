@@ -195,7 +195,7 @@ footer{padding:2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align:c
   .filters{padding:1rem 1.25rem}
 }
 
-/* PAGE TRANSITION — arrival side of the wine curtain defined on index.html
+/* PAGE TRANSITION — arrival side of the curtain defined on index.html
    (see that file's matching CSS comment for the full explanation,
    including why .pt-frame is a still of the hero video's last frame
    rather than a plain logo). This copy starts translateY(0) — already
@@ -203,7 +203,7 @@ footer{padding:2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align:c
    the held frame from the exit side with no flash of the grid, before
    "SHOWCASE — page transition" in <script> below fades it out and sweeps
    the curtain the rest of the way off the top. */
-.page-transition{position:fixed;inset:0;z-index:9999;background:#761941;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(0)}
+.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(0)} /* sampled from .pt-frame's own background (see hero-video-lastframe.png) so the still's edges — already feathered transparent by its mask-image — disappear into the curtain with zero visible seam */
 .pt-frame{width:clamp(320px,42vw,560px);aspect-ratio:1280/420;object-fit:cover;object-position:center;opacity:1;-webkit-mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%);mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%)}
 </style>
 </head>
