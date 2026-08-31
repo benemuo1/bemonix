@@ -1,10 +1,11 @@
 <!--
   BEMONIX — Services page (services.html)
   =========================================
-  One section: a bento-grid of "liquid glass" cards (backdrop-blur + SVG
-  feDisplacementMap distortion + 3D tilt on hover) — see the long CSS
-  comment on .services below for the full breakdown of how the glass
-  effect is layered and how the distortion filters tie to each card.
+  One section: a left-hand accordion (title + expandable detail, one open
+  at a time) paired with a single "liquid glass" preview panel on the
+  right (backdrop-blur + SVG feDisplacementMap distortion + 3D tilt on
+  hover) whose icon/title crossfade to match whichever service is open —
+  see the "SERVICES" CSS comment below for the glass-layer breakdown.
 
   Part of a multi-page site: index.html (hero landing page) / showcase.html
   (full 44-template work grid) / featured.html / about.html /
@@ -91,26 +92,22 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
   nav .nav-cta{padding:.45rem 1rem;font-size:.6rem}
 }
 
-/* SERVICES — "liquid glass" bento grid.
+/* SERVICES — accordion (left) + single "liquid glass" preview panel (right).
 
-   Layout: a 4-column x 2-row grid. .svc-card-hero (Website Design &
-   Development — our core offering) is explicitly placed across the first
-   2 columns and both rows, so it reads as one big anchor tile; the other
-   4 cards are left unpositioned and CSS Grid's default auto-placement
-   drops them into the remaining four 1x1 cells (col3/row1, col4/row1,
-   col3/row2, col4/row2) in DOM order — no explicit grid-column/row needed
-   on them, just don't reorder the hero card to anywhere but first in the
-   HTML or the auto-placed cards will fill the wrong cells.
+   Layout: .svc-split is a two-column flex row. .svc-accordion holds 5
+   .svc-acc-item rows — a single-open accordion (only one item's detail
+   panel is expanded at a time, like a native <details> group). Clicking
+   a trigger adds .active to its item and removes it from the rest (see
+   "SERVICES — accordion" in <script>), which is what drives both the
+   grid-template-rows 0fr->1fr expand/collapse (.svc-acc-panel below) and
+   the chevron rotation. .svc-accordion has its own overflow-y:auto so
+   that an especially tall expanded item scrolls *within* the column
+   instead of growing .services past the one-viewport-tall constraint
+   (see .services below).
 
-   The 4 small cards default to icon/badge + title + a one-line blurb;
-   hovering swaps that blurb for a 3-item bullet list (.svc-detail) via an
-   absolute-position crossfade in .svc-body — see that rule below. This
-   is what makes the grid feel less like a flat wall of identical cards:
-   there's more information than what's shown at rest, revealed on demand
-   instead of permanently crowding four already-small tiles.
-
-   Glass effect: every .svc-card contains four stacked full-bleed layers
-   (in paint order, back to front):
+   .svc-preview is the single card on the right — it keeps the old
+   per-card "liquid glass" treatment (still stacks the same four
+   full-bleed layers, in paint order back to front):
      .svc-glass-filter             backdrop-filter blur/saturate — the
                                     actual "frosted glass" blur of
                                     whatever is behind the card (the
@@ -122,18 +119,20 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
      .svc-glass-overlay            a flat translucent tint (the "glass
                                     material" itself)
      .svc-glass-specular           inset highlight = the glass edge catching light
-   ...then .svc-glass-content sits on top holding the actual text/icons.
-   Each card also references a unique #glass-distortion-N SVG filter
-   (defined in the hidden <svg> near the top of <body>) via an inline
-   `filter:` on .svc-glass-filter — that filter does the actual pixel
-   warping using feTurbulence + feDisplacementMap, and its `scale` is
-   animated per-frame on mousemove (see "SERVICES — liquid glass tilt"
-   in <script>) so the glass appears to ripple as you move the cursor.
-   The cards also tilt in 3D (perspective + rotateX/rotateY) on
-   mousemove, from that same script block.
+   ...then .svc-glass-content sits on top holding the icon/title. It
+   still references #glass-distortion-0 (defined in the hidden <svg> near
+   the top of <body>) via an inline `filter:` on .svc-glass-filter — that
+   filter does the actual pixel warping using feTurbulence +
+   feDisplacementMap, and its `scale` is animated per-frame on mousemove
+   (see "SERVICES — liquid glass tilt" in <script>) so the glass appears
+   to ripple as you move the cursor; the card also tilts in 3D
+   (perspective + rotateX/rotateY) from that same script block. When the
+   active accordion item changes, the panel's icon + title crossfade to
+   match (see "SERVICES — accordion" in <script>) instead of the panel
+   itself being swapped out.
 
    .svc-blob-1/2/3 are large blurred color blobs positioned behind the
-   grid — purely decorative, but required for the backdrop-filter blur
+   section — purely decorative, but required for the backdrop-filter blur
    above to have something colorful to pick up. They drift continuously
    via GSAP (see "SERVICES — ambient drifting blobs").
 
@@ -148,84 +147,59 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .svc-blob-3{width:300px;height:300px;top:30%;right:30%;background:rgba(255,233,175,.12)}
 .svc-content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column}
 .services h2{font-family:'Jost',sans-serif;font-weight:600;font-size:1.8rem;margin-bottom:1rem;letter-spacing:.1em;color:var(--text);flex-shrink:0}
-.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:1rem;flex:1 1 auto;min-height:0}
-@media(max-width:900px){.svc-grid{grid-template-columns:1fr;grid-template-rows:none}.svc-card,.svc-card-hero{grid-column:span 1 !important;grid-row:auto !important}}
-/* Card heights are grid-row-stretched (1fr 1fr, set on .svc-grid above) to
-   fill whatever's left of .services after the heading, instead of a flat
-   min-height — a flat px height doesn't shrink on a short window and this
-   page must fit in one viewport with no scroll (see .services). */
-.svc-card{position:relative;overflow:hidden;min-height:0;border-radius:1.5rem;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s;transform-style:preserve-3d} /* min-height:0 overrides the grid-item default of min-height:auto, which otherwise lets a card's own content (esp. the hero's icon+h3+p+features stack) force the whole 1fr grid row taller than the space actually left in .services — this is what was pushing the bottom row past the section's own bottom edge, clipped invisibly by .services' overflow:hidden */
-.svc-card-hero{grid-column:1/3;grid-row:1/3}
-.svc-card:hover{border-color:rgba(201,162,39,.5);box-shadow:0 20px 55px rgba(0,0,0,.5)}
+
+.svc-split{display:flex;align-items:stretch;gap:3rem;flex:1 1 auto;min-height:0}
+
+.svc-accordion{list-style:none;flex:1 1 50%;min-width:0;overflow-y:auto;display:flex;flex-direction:column}
+.svc-acc-item{border-top:1px dashed rgba(255,247,226,.25)}
+.svc-acc-item:last-child{border-bottom:1px dashed rgba(255,247,226,.25)}
+.svc-acc-trigger{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;padding:1.1rem .1rem;font-family:'Jost',sans-serif;font-weight:600;font-size:1.05rem;letter-spacing:.02em;color:var(--muted);transition:color .3s}
+.svc-acc-item.active .svc-acc-trigger{color:var(--text)}
+.svc-acc-trigger .chevron{width:18px;height:18px;flex-shrink:0;color:var(--accent);transition:transform .35s ease}
+.svc-acc-item.active .svc-acc-trigger .chevron{transform:rotate(180deg)}
+.svc-acc-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s ease}
+.svc-acc-item.active .svc-acc-panel{grid-template-rows:1fr}
+.svc-acc-inner{overflow:hidden;min-height:0}
+.svc-acc-inner p{margin:0 0 .8rem;max-width:34rem;color:var(--muted);font-size:.82rem;line-height:1.55;font-weight:200}
+.svc-detail{margin:0 0 1.1rem;padding:0;list-style:none;display:flex;flex-direction:column;gap:.35rem}
+.svc-detail li{font-size:.72rem;line-height:1.3;color:var(--muted);display:flex;align-items:center;gap:.5rem}
+.svc-detail li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+.svc-preview{flex:1 1 50%;min-width:0;position:relative;overflow:hidden;border-radius:1.5rem;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s;transform-style:preserve-3d}
+.svc-preview:hover{border-color:rgba(201,162,39,.5);box-shadow:0 20px 55px rgba(0,0,0,.5)}
 .svc-glass-filter,.svc-glass-distortion-overlay,.svc-glass-overlay,.svc-glass-specular{position:absolute;inset:0;border-radius:inherit}
 .svc-glass-filter{z-index:1;-webkit-backdrop-filter:blur(20px) saturate(140%) brightness(1.1);backdrop-filter:blur(6px) saturate(140%) brightness(1.1)}
 .svc-glass-distortion-overlay{z-index:2;background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0%,transparent 80%),radial-gradient(circle at 80% 70%,rgba(118,25,65,.1) 0%,transparent 80%);background-size:300% 300%;animation:svcFloatDistort 9s infinite ease-in-out;mix-blend-mode:overlay;pointer-events:none}
 @keyframes svcFloatDistort{0%{background-position:0% 0%}50%{background-position:100% 100%}100%{background-position:0% 0%}}
 .svc-glass-overlay{z-index:3;background:rgba(255,255,255,.05)}
 .svc-glass-specular{z-index:4;box-shadow:inset 1px 1px 1px rgba(255,255,255,.4);pointer-events:none}
-.svc-glass-content{position:relative;z-index:5;padding:1.8rem;height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:.7rem}
-.svc-icon{position:relative;z-index:1;width:52px;height:52px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:var(--text)}
-.svc-icon svg{width:22px;height:22px}
-.svc-card-hero .svc-icon{width:64px;height:64px}
-.svc-card-hero .svc-icon svg{width:28px;height:28px}
-.svc-badge{position:relative;z-index:1;align-self:flex-start;padding:1.4rem 1.8rem;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);border-radius:999px;font-family:'Jost',sans-serif;font-weight:600;font-size:1.5rem;letter-spacing:.04em;color:var(--text)}
-.svc-chart{position:relative;z-index:1;width:100%;height:50px;flex-shrink:0}
-.svc-card h3{position:relative;z-index:1;font-family:'Jost',sans-serif;font-weight:600;font-size:1.15rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text);margin-top:auto;line-height:1.15}
-.svc-card-hero h3{font-size:1.8rem;margin-top:0}
-.svc-card p{position:relative;z-index:1;color:var(--muted);font-size:.8rem;line-height:1.5;font-weight:200}
-.svc-card-hero p{font-size:.95rem;line-height:1.65;max-width:85%}
+.svc-preview-content{position:relative;z-index:5;height:100%;box-sizing:border-box;padding:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;text-align:center}
+.svc-icon{position:relative;z-index:1;width:96px;height:96px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:var(--text)}
+.svc-icon svg{width:42px;height:42px;transition:opacity .25s ease}
+.svc-preview-title{position:relative;z-index:1;margin:0;font-family:'Jost',sans-serif;font-weight:600;font-size:1.4rem;letter-spacing:.03em;color:var(--text);transition:opacity .25s ease}
 
-/* The 4 small cards' one-line blurb (p) and its hover-revealed replacement
-   (.svc-detail, a 3-item bullet list) are stacked in the same box via
-   absolute positioning and crossfaded on :hover — .svc-body's min-height
-   is what reserves the space for them, since absolutely-positioned
-   children can't size their own parent. */
-.svc-body{position:relative;z-index:1;min-height:3.6rem} /* must comfortably fit .svc-detail's 3 stacked lines below (~.72rem * 1.3 line-height * 3 + 2 gaps ≈ 3.4rem) — this was 2.6em (~41.6px) and too short, so the list overflowed this absolutely-positioned box and got clipped by .svc-card's own overflow:hidden, reading as the hover text partly vanishing */
-.svc-body p,.svc-detail{position:absolute;inset:0;margin:0;transition:opacity .3s ease,transform .3s ease}
-.svc-detail{opacity:0;transform:translateY(6px);pointer-events:none;list-style:none;display:flex;flex-direction:column;justify-content:center;gap:.3rem}
-.svc-detail li{font-size:.72rem;line-height:1.3;color:var(--muted);display:flex;align-items:center;gap:.5rem}
-.svc-detail li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
-.svc-card:hover .svc-body p{opacity:0;transform:translateY(-6px)}
-.svc-card:hover .svc-detail{opacity:1;transform:translateY(0);pointer-events:auto}
-
-/* Hero card's feature list (Website Design & Development) stays visible at
-   all times, unlike the small cards' hover-swap above — it has the room
-   for it, and being the anchor tile it shouldn't need a hover to read. */
-.svc-hero-features{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin-top:.2rem}
-.svc-hero-features span{font-size:.7rem;letter-spacing:.03em;color:var(--muted);display:flex;align-items:center;gap:.45rem}
-.svc-hero-features span::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
+@media(max-width:900px){.svc-split{flex-direction:column}.svc-preview{display:none}.svc-accordion{overflow-y:visible}}
 
 footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align:center;font-size:.6rem;color:var(--muted);letter-spacing:.2em;flex-shrink:0}
 
 /* MOBILE — this page is normally locked to exactly one screen with no
    scroll (see html,body above); combined with the 900px query above
-   stacking all 5 cards into a single column, cramming all of them into
-   one phone-height screen is not realistic, so below this breakpoint the
-   constraint is dropped and the grid becomes a normal, natural-height,
-   scrollable column instead. */
+   hiding the preview panel and stacking the accordion full-width, cramming
+   it into one phone-height screen is not realistic, so below this
+   breakpoint the constraint is dropped and the accordion becomes a
+   normal, natural-height, scrollable column instead. */
 @media(max-width:640px){
   html,body{height:auto;overflow:visible}
   .services{flex:none;min-height:100vh;min-height:100dvh;padding:110px 1.5rem 2.5rem}
-  .svc-grid{height:auto}
-  .svc-card,.svc-card-hero{min-height:260px}
 }
 </style>
 </head>
 <body>
-<!-- One distortion filter PER services card (see the "SERVICES" CSS comment
-     above for how these get used). They must be separate <filter> elements
-     with unique IDs — sharing one filter across cards would mean hovering
-     one card's `scale` change leaks into every other card using it. If you
-     add/remove a .svc-card below, add/remove a matching filter here (index
-     N must line up: card 0 -> #glass-distortion-0, card 1 ->
-     #glass-distortion-1, etc. — the JS just does `#glass-distortion-${i}`
-     by DOM order). -->
+<!-- Distortion filter for the single .svc-preview card (see the "SERVICES"
+     CSS comment above for how it gets used) — feTurbulence + feDisplacementMap,
+     with `scale` animated live on mousemove by the JS at the bottom of <body>. -->
 <svg style="position:absolute;width:0;height:0;overflow:hidden">
   <filter id="glass-distortion-0"><feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="77"/></filter>
-  <filter id="glass-distortion-1"><feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="77"/></filter>
-  <filter id="glass-distortion-2"><feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="77"/></filter>
-  <filter id="glass-distortion-3"><feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="77"/></filter>
-  <filter id="glass-distortion-4"><feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="77"/></filter>
 </svg>
 
 <nav>
@@ -256,114 +230,112 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
   <div class="svc-blob svc-blob-3"></div>
   <div class="svc-content">
   <h2>SERVICES</h2>
-  <div class="svc-grid">
-    <!-- Every .svc-card below repeats the same 4-layer glass structure:
-         .svc-glass-filter / -distortion-overlay / -overlay / -specular,
-         then .svc-glass-content holding the real text. Each card's
-         .svc-glass-filter points at its own #glass-distortion-N filter
-         (N = card's position among .svc-card elements, 0-indexed) — keep
-         that numbering in sync if you reorder or add cards. The hero card
-         must stay FIRST in DOM order — see the .svc-grid CSS comment above
-         for why the other 4 cards' grid placement depends on that. -->
-    <div class="svc-card svc-card-hero">
+  <div class="svc-split">
+    <!-- Single-open accordion. Each .svc-acc-item carries data-icon so the
+         click handler in <script> knows which SVC_ICONS entry to crossfade
+         into the preview panel on the right — see "SERVICES — accordion". -->
+    <ul class="svc-accordion" id="svcAccordion">
+      <li class="svc-acc-item active" data-icon="dev">
+        <button type="button" class="svc-acc-trigger" aria-expanded="true">
+          <span>Website Design &amp; Development</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="svc-acc-panel">
+          <div class="svc-acc-inner">
+            <p>Cinematic, GSAP-driven sites built with design and code as one process — from first wireframe to a site that ships.</p>
+            <ul class="svc-detail">
+              <li>Custom GSAP Animation</li>
+              <li>Mobile-First &amp; Responsive</li>
+              <li>SEO-Ready Architecture</li>
+              <li>Fast, Optimized Builds</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      <li class="svc-acc-item" data-icon="app">
+        <button type="button" class="svc-acc-trigger" aria-expanded="false">
+          <span>App Development</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="svc-acc-panel">
+          <div class="svc-acc-inner">
+            <p>Native-feel iOS and Android builds, from prototype to shipped app.</p>
+            <ul class="svc-detail">
+              <li>Native-Feel Performance</li>
+              <li>Push Notifications</li>
+              <li>App Store Launch Support</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      <li class="svc-acc-item" data-icon="seo">
+        <button type="button" class="svc-acc-trigger" aria-expanded="false">
+          <span>SEO &amp; Performance</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="svc-acc-panel">
+          <div class="svc-acc-inner">
+            <p>Technical SEO and performance tuning that keeps sites fast and found.</p>
+            <ul class="svc-detail">
+              <li>Technical SEO Audits</li>
+              <li>Core Web Vitals</li>
+              <li>Ongoing Monitoring</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      <li class="svc-acc-item" data-icon="brand">
+        <button type="button" class="svc-acc-trigger" aria-expanded="false">
+          <span>Brand Identity</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="svc-acc-panel">
+          <div class="svc-acc-inner">
+            <p>Identity systems and visual language that carry across every touchpoint.</p>
+            <ul class="svc-detail">
+              <li>Logo &amp; Visual Identity</li>
+              <li>Style Guides</li>
+              <li>Brand Voice</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+
+      <li class="svc-acc-item" data-icon="ecom">
+        <button type="button" class="svc-acc-trigger" aria-expanded="false">
+          <span>E-Commerce &amp; Retainers</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="svc-acc-panel">
+          <div class="svc-acc-inner">
+            <p>Custom and Shopify builds, plus ongoing support and iteration after launch.</p>
+            <ul class="svc-detail">
+              <li>Shopify &amp; Custom Builds</li>
+              <li>Monthly Retainers</li>
+              <li>Ongoing Iteration</li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Preview panel — keeps the old per-card glass structure (see the
+         "SERVICES" CSS comment) but there's only one of it now; its icon
+         and title crossfade to match the active accordion item instead of
+         separate cards existing per service. -->
+    <div class="svc-preview svc-card">
       <div class="svc-glass-filter" style="filter:url(#glass-distortion-0) saturate(120%) brightness(1.15)"></div>
       <div class="svc-glass-distortion-overlay"></div>
       <div class="svc-glass-overlay"></div>
       <div class="svc-glass-specular"></div>
-      <div class="svc-glass-content">
+      <div class="svc-preview-content">
         <div class="svc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>
+          <svg id="svcPreviewSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/></svg>
         </div>
-        <h3>Website Design &amp; Development</h3>
-        <p>Cinematic, GSAP-driven sites built with design and code as one process — from first wireframe to a site that ships.</p>
-        <div class="svc-hero-features">
-          <span>Custom GSAP Animation</span>
-          <span>Mobile-First &amp; Responsive</span>
-          <span>SEO-Ready Architecture</span>
-          <span>Fast, Optimized Builds</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="svc-card">
-      <div class="svc-glass-filter" style="filter:url(#glass-distortion-1) saturate(120%) brightness(1.15)"></div>
-      <div class="svc-glass-distortion-overlay"></div>
-      <div class="svc-glass-overlay"></div>
-      <div class="svc-glass-specular"></div>
-      <div class="svc-glass-content">
-        <div class="svc-badge">iOS &amp; Android</div>
-        <h3>App Development</h3>
-        <div class="svc-body">
-          <p>Native-feel iOS and Android builds, from prototype to shipped app.</p>
-          <ul class="svc-detail">
-            <li>Native-Feel Performance</li>
-            <li>Push Notifications</li>
-            <li>App Store Launch Support</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="svc-card">
-      <div class="svc-glass-filter" style="filter:url(#glass-distortion-2) saturate(120%) brightness(1.15)"></div>
-      <div class="svc-glass-distortion-overlay"></div>
-      <div class="svc-glass-overlay"></div>
-      <div class="svc-glass-specular"></div>
-      <div class="svc-glass-content">
-        <svg class="svc-chart" viewBox="0 0 200 50" preserveAspectRatio="none">
-          <polyline points="0,40 20,30 40,35 60,20 80,25 100,10 120,18 140,8 160,15 180,5 200,12" fill="none" stroke="var(--accent)" stroke-width="2"/>
-        </svg>
-        <h3>SEO &amp; Performance</h3>
-        <div class="svc-body">
-          <p>Technical SEO and performance tuning that keeps sites fast and found.</p>
-          <ul class="svc-detail">
-            <li>Technical SEO Audits</li>
-            <li>Core Web Vitals</li>
-            <li>Ongoing Monitoring</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="svc-card">
-      <div class="svc-glass-filter" style="filter:url(#glass-distortion-3) saturate(120%) brightness(1.15)"></div>
-      <div class="svc-glass-distortion-overlay"></div>
-      <div class="svc-glass-overlay"></div>
-      <div class="svc-glass-specular"></div>
-      <div class="svc-glass-content">
-        <div class="svc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1" fill="currentColor" stroke="none"/></svg>
-        </div>
-        <h3>Brand Identity</h3>
-        <div class="svc-body">
-          <p>Identity systems and visual language that carry across every touchpoint.</p>
-          <ul class="svc-detail">
-            <li>Logo &amp; Visual Identity</li>
-            <li>Style Guides</li>
-            <li>Brand Voice</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="svc-card">
-      <div class="svc-glass-filter" style="filter:url(#glass-distortion-4) saturate(120%) brightness(1.15)"></div>
-      <div class="svc-glass-distortion-overlay"></div>
-      <div class="svc-glass-overlay"></div>
-      <div class="svc-glass-specular"></div>
-      <div class="svc-glass-content">
-        <div class="svc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/></svg>
-        </div>
-        <h3>E-Commerce &amp; Retainers</h3>
-        <div class="svc-body">
-          <p>Custom and Shopify builds, plus ongoing support and iteration after launch.</p>
-          <ul class="svc-detail">
-            <li>Shopify &amp; Custom Builds</li>
-            <li>Monthly Retainers</li>
-            <li>Ongoing Iteration</li>
-          </ul>
-        </div>
+        <h3 class="svc-preview-title">Website Design &amp; Development</h3>
       </div>
     </div>
   </div>
@@ -395,9 +367,53 @@ gsap.registerPlugin(ScrollTrigger);
 })();
 
 gsap.from('.services h2', {scrollTrigger:{trigger:'.services',start:'top 85%'}, y:30, opacity:0, duration:.7});
+gsap.from('.svc-accordion', {scrollTrigger:{trigger:'.svc-accordion',start:'top 90%'}, y:30, opacity:0, duration:.7});
 gsap.utils.toArray('.svc-card').forEach((card, i) =>
   gsap.from(card, {scrollTrigger:{trigger:card,start:'top 95%'}, y:40, opacity:0, duration:.7, delay:(i%3)*.08})
 );
+
+// ── SERVICES — accordion ────────────────────────────────────────────────────
+// Single-open accordion on the left: clicking a trigger marks its .svc-acc-item
+// active (driving the CSS grid-template-rows expand + chevron rotation) and
+// crosses the preview panel's icon/title over to match, keyed by data-icon.
+(function initServicesAccordion() {
+  const SVC_ICONS = {
+    dev: '<polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/>',
+    app: '<rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/>',
+    seo: '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="14 6 21 6 21 13"/>',
+    brand: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1" fill="currentColor" stroke="none"/>',
+    ecom: '<circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.5 3h2l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/>'
+  };
+
+  const items = document.querySelectorAll('.svc-acc-item');
+  const previewSvg = document.getElementById('svcPreviewSvg');
+  const previewTitle = document.querySelector('.svc-preview-title');
+  if (!items.length || !previewSvg || !previewTitle) return;
+
+  items.forEach(item => {
+    item.querySelector('.svc-acc-trigger').addEventListener('click', () => {
+      if (item.classList.contains('active')) return;
+
+      items.forEach(i => {
+        i.classList.remove('active');
+        i.querySelector('.svc-acc-trigger').setAttribute('aria-expanded', 'false');
+      });
+      item.classList.add('active');
+      item.querySelector('.svc-acc-trigger').setAttribute('aria-expanded', 'true');
+
+      const icon = SVC_ICONS[item.dataset.icon];
+      const title = item.querySelector('.svc-acc-trigger span').textContent;
+      previewSvg.style.opacity = 0;
+      previewTitle.style.opacity = 0;
+      setTimeout(() => {
+        if (icon) previewSvg.innerHTML = icon;
+        previewTitle.textContent = title;
+        previewSvg.style.opacity = 1;
+        previewTitle.style.opacity = 1;
+      }, 200);
+    });
+  });
+})();
 
 // ── SERVICES — ambient drifting blobs ──────────────────────────────────────────
 gsap.to('.svc-blob-1', {x:60,  y:40,  duration:14, ease:'sine.inOut', yoyo:true, repeat:-1});
