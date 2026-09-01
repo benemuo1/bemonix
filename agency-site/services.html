@@ -136,23 +136,30 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
    above to have something colorful to pick up. They drift continuously
    via GSAP (see "SERVICES — ambient drifting blobs").
 
-   This section keeps its own dark wine background (deliberately mid-tone,
-   not near-black) with locally-redefined --surface/--text/--muted/--accent
-   custom properties — every rule below that reads var(--text) etc. picks
-   these up automatically instead of the light-mode :root values. */
-.services{position:relative;overflow:hidden;flex:1 1 auto;min-height:0;display:flex;align-items:center;padding:140px 3rem 1.5rem;background:#761941;--surface:rgba(255,247,226,.25);--text:#fff7e2;--muted:rgba(255,247,226,.65);--accent:#ffe9af} /* top padding clears the fixed nav — see the matching comment on featured.html's .h-section for why it's 140px, not just the nav's own 90px. flex:1/min-height:0 (instead of min-height:100vh) makes this fill whatever's left of the viewport after the footer, so the page fits on one screen with no scroll */
+   This section uses the standard cream :root palette (no local
+   --surface/--text/--muted/--accent overrides) — the .svc-blob washes and
+   the glass card's overlay tints below are calibrated for that light
+   backdrop (see their own comments for what changed from the old dark
+   wine treatment). */
+.services{position:relative;overflow:hidden;flex:1 1 auto;min-height:0;display:flex;align-items:center;padding:140px 3rem 1.5rem;background:var(--bg)} /* top padding clears the fixed nav — see the matching comment on featured.html's .h-section for why it's 140px, not just the nav's own 90px. flex:1/min-height:0 (instead of min-height:100vh) makes this fill whatever's left of the viewport after the footer, so the page fits on one screen with no scroll */
 .svc-blob{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
-.svc-blob-1{width:420px;height:420px;top:-120px;left:2%;background:rgba(255,233,175,.22)}
-.svc-blob-2{width:380px;height:380px;bottom:-140px;right:6%;background:rgba(76,16,42,.35)}
-.svc-blob-3{width:300px;height:300px;top:30%;right:30%;background:rgba(255,233,175,.12)}
+/* Gold/wine washes, calibrated for the cream background above — the old
+   pale-gold blob-1/3 tints (rgba(255,233,175,..)) were tuned to show
+   against a dark wine backdrop and are nearly the same hue/lightness as
+   this cream bg itself, so they'd vanish here; blob-2's old dark-wine
+   opacity (.35) was tuned the same way and would read as a heavy muddy
+   patch instead of a soft glow at that strength against cream. */
+.svc-blob-1{width:420px;height:420px;top:-120px;left:2%;background:rgba(201,162,39,.16)}
+.svc-blob-2{width:380px;height:380px;bottom:-140px;right:6%;background:rgba(118,25,65,.12)}
+.svc-blob-3{width:300px;height:300px;top:30%;right:30%;background:rgba(201,162,39,.1)}
 .svc-content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column}
 .services h2{font-family:'Jost',sans-serif;font-weight:600;font-size:1.8rem;margin-bottom:1rem;letter-spacing:.1em;color:var(--text);flex-shrink:0}
 
 .svc-split{display:flex;align-items:stretch;gap:3rem;flex:1 1 auto;min-height:0}
 
 .svc-accordion{list-style:none;flex:1 1 50%;min-width:0;overflow-y:auto;display:flex;flex-direction:column}
-.svc-acc-item{border-top:1px dashed rgba(255,247,226,.25)}
-.svc-acc-item:last-child{border-bottom:1px dashed rgba(255,247,226,.25)}
+.svc-acc-item{border-top:1px dashed rgba(201,162,39,.35)} /* was a near-white dashed line (rgba(255,247,226,..)) tuned to show against dark wine — invisible on the cream bg this section uses now, switched to the same gold-dashed divider style used in the nav/footer elsewhere on the site */
+.svc-acc-item:last-child{border-bottom:1px dashed rgba(201,162,39,.35)}
 .svc-acc-trigger{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;padding:1.1rem .1rem;font-family:'Jost',sans-serif;font-weight:600;font-size:1.05rem;letter-spacing:.02em;color:var(--muted);transition:color .3s}
 .svc-acc-item.active .svc-acc-trigger{color:var(--text)}
 .svc-acc-trigger .chevron{width:18px;height:18px;flex-shrink:0;color:var(--accent);transition:transform .35s ease}
@@ -165,16 +172,16 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .svc-detail li{font-size:.72rem;line-height:1.3;color:var(--muted);display:flex;align-items:center;gap:.5rem}
 .svc-detail li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
 
-.svc-preview{flex:1 1 50%;min-width:0;position:relative;overflow:hidden;border-radius:1.5rem;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s;transform-style:preserve-3d}
-.svc-preview:hover{border-color:rgba(201,162,39,.5);box-shadow:0 20px 55px rgba(0,0,0,.5)}
+.svc-preview{flex:1 1 50%;min-width:0;position:relative;overflow:hidden;border-radius:1.5rem;border:1px solid rgba(76,16,42,.12);box-shadow:0 8px 32px rgba(76,16,42,.15);transition:border-color .3s,box-shadow .3s;transform-style:preserve-3d} /* border/shadow were white-tinted (rgba(255,255,255,..)) + solid black shadow, tuned for a dark backdrop where a light edge reads as glass catching light — against the cream bg this section uses now a light border would be invisible, so it's a soft wine-tinted border instead, and the shadow's tinted wine-on-cream rather than flat black for a softer, less harsh drop */
+.svc-preview:hover{border-color:rgba(201,162,39,.5);box-shadow:0 20px 45px rgba(76,16,42,.22)}
 .svc-glass-filter,.svc-glass-distortion-overlay,.svc-glass-overlay,.svc-glass-specular{position:absolute;inset:0;border-radius:inherit}
-.svc-glass-filter{z-index:1;-webkit-backdrop-filter:blur(20px) saturate(140%) brightness(1.1);backdrop-filter:blur(6px) saturate(140%) brightness(1.1)}
+.svc-glass-filter{z-index:1;-webkit-backdrop-filter:blur(20px) saturate(140%) brightness(1.03);backdrop-filter:blur(6px) saturate(140%) brightness(1.03)} /* brightness eased from 1.1 to 1.03 — that much extra brightness was compensating for a dark backdrop and would wash out the cream one */
 .svc-glass-distortion-overlay{z-index:2;background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0%,transparent 80%),radial-gradient(circle at 80% 70%,rgba(118,25,65,.1) 0%,transparent 80%);background-size:300% 300%;animation:svcFloatDistort 9s infinite ease-in-out;mix-blend-mode:overlay;pointer-events:none}
 @keyframes svcFloatDistort{0%{background-position:0% 0%}50%{background-position:100% 100%}100%{background-position:0% 0%}}
 .svc-glass-overlay{z-index:3;background:rgba(255,255,255,.05)}
-.svc-glass-specular{z-index:4;box-shadow:inset 1px 1px 1px rgba(255,255,255,.4);pointer-events:none}
+.svc-glass-specular{z-index:4;box-shadow:inset 1px 1px 1px rgba(255,255,255,.6),inset -1px -1px 1px rgba(76,16,42,.08);pointer-events:none} /* was a single white inset highlight — against dark wine that alone read as a bright glass-edge catch-light, but against cream a white-on-near-white highlight barely shows, so a second, subtle dark inset was added on the opposite corner to keep the "glass edge" legible regardless of backdrop */
 .svc-preview-content{position:relative;z-index:5;height:100%;box-sizing:border-box;padding:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;text-align:center}
-.svc-icon{position:relative;z-index:1;width:96px;height:96px;flex-shrink:0;border-radius:50%;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:var(--text)}
+.svc-icon{position:relative;z-index:1;width:96px;height:96px;flex-shrink:0;border-radius:50%;background:rgba(118,25,65,.05);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(76,16,42,.15);display:flex;align-items:center;justify-content:center;color:var(--text)} /* fill/border were white-tinted, invisible against the cream bg this section uses now — switched to a matching soft wine tint so the "frosted chip" edge stays visible */
 .svc-icon svg{width:42px;height:42px;transition:opacity .25s ease}
 .svc-preview-title{position:relative;z-index:1;margin:0;font-family:'Jost',sans-serif;font-weight:600;font-size:1.4rem;letter-spacing:.03em;color:var(--text);transition:opacity .25s ease}
 

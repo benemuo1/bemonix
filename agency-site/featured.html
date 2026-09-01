@@ -98,11 +98,10 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
    <script>) — this CSS just lays out the two columns and styles the
    active/inactive text states.
 
-   This section keeps its own dark wine background (deliberately mid-tone,
-   not near-black) with locally-redefined --surface/--text/--muted/--accent
-   custom properties — every rule below that reads var(--text) etc. picks
-   these up automatically instead of the light-mode :root values. */
-.h-section{overflow:hidden;flex:1 1 auto;min-height:0;display:flex;align-items:center;padding-top:140px;background:#761941;--surface:rgba(255,247,226,.25);--text:#fff7e2;--muted:rgba(255,247,226,.65);--accent:#ffe9af} /* padding-top clears the fixed nav — the nav bar itself is only 90px, but its logo <img> is 150px tall and centered on the bar, so it visually overflows down to ~120px from the top; 140px leaves a clean gap past that overflow instead of the old 100px, which the logo's bottom 20-30px hung into. flex:1/min-height:0 (instead of min-height:100vh) makes it fill whatever's left of the viewport after the footer, so the page fits on one screen with no scroll */
+   This section uses the standard cream :root palette (no local
+   --surface/--text/--muted/--accent overrides), same as the rest of the
+   page. */
+.h-section{overflow:hidden;flex:1 1 auto;min-height:0;display:flex;align-items:center;padding-top:140px;background:var(--bg)} /* padding-top clears the fixed nav — the nav bar itself is only 90px, but its logo <img> is 150px tall and centered on the bar, so it visually overflows down to ~120px from the top; 140px leaves a clean gap past that overflow instead of the old 100px, which the logo's bottom 20-30px hung into. flex:1/min-height:0 (instead of min-height:100vh) makes it fill whatever's left of the viewport after the footer, so the page fits on one screen with no scroll */
 .wb-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;width:100%;height:100%;padding:.5rem 3rem}
 /* align-items switches to flex-start on the desktop row layout (instead of
    staying "center" like the mobile column layout) on purpose: the menu
@@ -141,7 +140,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .wb-more-link:hover{border-color:var(--gold);color:var(--gold)}
 .wb-visual{position:relative;width:100%;display:flex;justify-content:center;align-items:center}
 @media(min-width:900px){.wb-visual{width:60%}}
-.wb-glow{position:absolute;width:120%;height:120%;background:radial-gradient(circle,rgba(255,233,175,.18),transparent 70%);filter:blur(60px);border-radius:50%}
+.wb-glow{position:absolute;width:120%;height:120%;background:radial-gradient(circle,rgba(118,25,65,.1),transparent 70%);filter:blur(60px);border-radius:50%} /* was a pale gold glow, tuned to read against the section's old dark wine background — swapped to a low-opacity wine tint (the site's own --accent hex) since pale gold barely shows against the cream background this section uses now */
 .wb-svg{position:relative;z-index:1;width:100%;max-width:min(850px,66vh);height:auto;filter:drop-shadow(0 20px 60px rgba(0,0,0,.5))} /* max-width also controls how big the phone screen renders (see .wb-phone-bezel below) — a bigger value here means the fixed-size corner rounding eats a smaller proportion of the actual screenshot content. capped by viewport height (66vh), not just width, since this is a no-scroll page and the svg is square — on a short/wide window a pure px/% cap would make it taller than the space actually left after the nav/footer */
 .wb-visual:not(.is-phone) .wb-svg{max-width:min(1050px,76vh)} /* Domaine/Blvck (full website screenshots, no phone bezel) render noticeably larger than the app screenshots — the phone-bezel size above is load-bearing (must match .wb-phone-bezel's math exactly, see its comment) so it can't just be bumped for everyone; this only overrides it when there's no bezel overlay to keep in sync with */
 .wb-visual.is-phone .wb-svg{clip-path:inset(0 21.9% 0 21.9% round 1.2rem)} /* restricts to the phone screen's width only (0 top/bottom inset = full height); the round radius is kept small relative to .wb-svg's max-width above so it reads as a phone-screen curve without visibly eating into a real screenshot's corner content */

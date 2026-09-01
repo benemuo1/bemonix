@@ -88,11 +88,10 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
   nav .nav-cta{padding:.45rem 1rem;font-size:.6rem}
 }
 
-/* CONTACT — dark section, same treatment as Featured/Services (see the
-   "Alternating section backgrounds" comment in index.html's file header)
-   with locally-redefined --surface/--text/--muted/--accent custom
-   properties for this subtree. */
-.contact{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:140px 3rem 1.5rem;background:#761941;--surface:rgba(255,247,226,.25);--text:#fff7e2;--muted:rgba(255,247,226,.65);--accent:#ffe9af} /* top padding clears the fixed nav — see the matching comment on featured.html's .h-section for why it's 140px, not just the nav's own 90px. flex:1/min-height:0 (instead of min-height:100vh) makes this fill whatever's left of the viewport after the footer, so the page fits on one screen with no scroll */
+/* CONTACT — cream section, same as Featured/Services/About/Services (no
+   local --surface/--text/--muted/--accent overrides — this section just
+   uses the standard :root palette like the rest of the page). */
+.contact{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:140px 3rem 1.5rem;background:var(--bg)} /* top padding clears the fixed nav — see the matching comment on featured.html's .h-section for why it's 140px, not just the nav's own 90px. flex:1/min-height:0 (instead of min-height:100vh) makes this fill whatever's left of the viewport after the footer, so the page fits on one screen with no scroll */
 .contact h2{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(2.4rem,min(8vw,13vh),6rem);letter-spacing:.05em;color:var(--text)} /* capped by vh as well as vw — a pure vw cap can still be too tall for a short window on this no-scroll page */
 .contact h2 .accent{color:var(--accent)}
 .contact p{color:var(--muted);font-size:.85rem;margin-top:1.2rem;font-weight:200}
