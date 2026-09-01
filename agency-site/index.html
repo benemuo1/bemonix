@@ -248,15 +248,15 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
 // ── HERO — nav logo reveal ──────────────────────────────────────────────────────
 // nav .logo starts opacity:0 (see its CSS comment) — the nav slot stays blank
 // until the hero video (no `loop`, so it plays exactly once and fires 'ended')
-// finishes, then the cube mark appears in the exact same instant the video
-// settles on its last frame, not a beat after — hence gsap.set (opacity flips
-// straight to 1), not a fade tween. 'error' is also covered so a failed video
-// load can't leave the nav permanently blank.
+// finishes, then the cube mark fades in — starting in the exact same instant
+// the video settles on its last frame (no delay before the tween starts), but
+// eased in over time rather than popping straight to full opacity. 'error' is
+// also covered so a failed video load can't leave the nav permanently blank.
 (function initHeroNavLogoReveal() {
   const video = document.getElementById('heroVideo');
   const logo = document.querySelector('nav .logo');
   if (!video || !logo) return;
-  const reveal = () => gsap.set(logo, {opacity:1});
+  const reveal = () => gsap.to(logo, {opacity:1, duration:.6, ease:'power1.out'});
   video.addEventListener('ended', reveal, {once:true});
   video.addEventListener('error', reveal, {once:true});
 })();
