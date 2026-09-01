@@ -263,7 +263,7 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
   const reveal = () => {
     if (revealed) return;
     revealed = true;
-    gsap.to(logo, {opacity:1, duration:.15, ease:'power1.out'});
+    gsap.to(logo, {opacity:1, duration:.5, ease:'sine.out'});
   };
   // rAF polling, not 'timeupdate' — 'timeupdate' only fires a few times a
   // second, which is too coarse to catch XFINISHED_T right when it happens.
