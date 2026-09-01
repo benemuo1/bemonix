@@ -99,10 +99,13 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 }
 
 /* CUBE ROLL — the header and the filters+grid are two faces of a cube
-   (echoing the cube logo/hero video motif), rolling UPWARD: the header
-   tips back and up, rolling completely out of frame over the top, while
-   the grid rises up from below/behind to take its place — not a lid
-   opening away from the viewer, a drum rotating forward.
+   (echoing the cube logo/hero video motif), rolling UPWARD like a barrel
+   turning forward: the header both rotates AND visibly translates up
+   toward the nav, disappearing off the top of frame, while the grid
+   rotates AND translates up from below to take its place — a true
+   rolling motion, not a hinge tipping open in place (rotateX alone
+   read as a lid folding away, not as something moving/rolling past the
+   nav — see <script> for the yPercent that was added alongside it).
    .cube-stage is pinned in place by ScrollTrigger for one viewport's
    worth of scroll (see "CUBE ROLL" in <script>) while a scrubbed tween
    rotates .cube-face-header from 0 to 90deg (hinged at its own bottom
@@ -110,13 +113,16 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
    which is what makes it roll up and back rather than folding forward
    toward you) and .cube-face-grid from -90 to 0deg (hinged at its own
    top edge, starting tipped away/hidden and rotating up into upright
-   position) at the same time, in sync. Both faces are position:absolute,
-   inset:0 inside a .cube-stage fixed at exactly 100vh tall — that's what
-   makes their hinge lines coincide (header's bottom edge and grid's top
-   edge are the SAME line: the bottom of that 100vh box) instead of
-   drifting apart the way plain normal-flow siblings of different
-   heights would. perspective lives on .cube-stage (the shared ancestor)
-   rather than on either face, so both render in one consistent 3D space.
+   position) at the same time, in sync, WHILE both also translate
+   (yPercent -100 for the header, 100->0 for the grid) so the whole
+   thing genuinely travels upward rather than pivoting on the spot.
+   Both faces are position:absolute, inset:0 inside a .cube-stage fixed
+   at exactly 100vh tall — that's what makes their hinge lines coincide
+   (header's bottom edge and grid's top edge are the SAME line: the
+   bottom of that 100vh box) instead of drifting apart the way plain
+   normal-flow siblings of different heights would. perspective lives
+   on .cube-stage (the shared ancestor) rather than on either face, so
+   both render in one consistent 3D space.
 
    Once the scrub reaches the end, ScrollTrigger un-pins .cube-stage and
    JS (see script) adds .cube-done: the header (now rotated fully away)
@@ -642,8 +648,9 @@ ScrollTrigger.matchMedia({
         onEnterBack: () => stage.classList.remove('cube-done')
       }
     });
-    tl.to('.cube-face-header', {rotateX:90,  ease:'none', duration:1}, 0)
-      .to('.cube-face-grid',   {rotateX:0,   ease:'none', duration:1}, 0)
+    gsap.set('.cube-face-grid', {yPercent:100});
+    tl.to('.cube-face-header', {rotateX:90,  yPercent:-100, ease:'none', duration:1}, 0)
+      .to('.cube-face-grid',   {rotateX:0,   yPercent:0,    ease:'none', duration:1}, 0)
       .to('#scrollHint',       {opacity:0,   ease:'none', duration:.3}, 0);
     return () => { tl.scrollTrigger.kill(); stage.classList.remove('cube-done'); };
   }
