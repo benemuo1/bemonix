@@ -142,9 +142,9 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .cube-face{position:absolute;inset:0;backface-visibility:hidden;will-change:transform} /* will-change promotes each face to its own GPU layer up front rather than the browser deciding reactively once the scrub starts — with 44 cards' worth of images/shadows riding along on .cube-face-grid, that promotion hitch is exactly the kind of choppiness the .grid pop-in's own will-change used to guard against (see that rule's comment) before the transform moved up to this level */
 .cube-face-header{transform-origin:bottom center;z-index:2}
 .cube-face-grid{transform-origin:top center;transform:rotateX(-90deg);z-index:1;overflow:hidden}
-.cube-stage.cube-done{height:auto}
+.cube-stage.cube-done{height:auto!important;max-height:none!important;max-width:none!important;width:auto!important} /* !important on all four: ScrollTrigger's own pin mechanism sets inline max-height/max-width/width (not a plain height) to lock the pinned box's dimensions, and scrub:1's internal smoothing keeps re-writing that (and the transform below) for a moment even after onLeave/tl.progress(1) fires (see the JS comment) — a plain class-based override loses that fight since inline always beats a class, but !important beats inline too, which is exactly the (rare, legitimate) case for it here: overriding a library's own inline styles we don't fully control the timing of, not fighting our own code. Without max-height:none specifically, .cube-face-grid's real (very tall) content stayed visually rendered but .cube-stage's own LAYOUT height stuck at one viewport tall, which is what was letting .cta start overlapping the grid below */
 .cube-stage.cube-done .cube-face-header{display:none}
-.cube-stage.cube-done .cube-face-grid{position:static;overflow:visible;transform:none;will-change:auto}
+.cube-stage.cube-done .cube-face-grid{position:static!important;overflow:visible!important;transform:none!important;will-change:auto}
 
 /* PAGE HEADER — the front face of the cube above: a full-viewport "cover"
    moment (not a text block sharing the screen with the grid) that the
@@ -638,14 +638,52 @@ gsap.from('.page-header p, .header-meta', {y:30, opacity:0, duration:.8, stagger
 // onLeave/onEnterBack toggle .cube-done on #cubeStage (see its CSS) for
 // the handoff to plain normal flow once the roll fully completes, and
 // undo that if the user scrolls back up past the pin again.
+// scrub:1 means the tween's VALUES lag slightly behind the actual scroll
+// position (that's the whole point of scrub smoothing) — so onLeave can
+// fire the instant scroll crosses the trigger's end, before the tween has
+// actually finished catching up to its target. Left alone, that leaves a
+// near-but-not-quite-rotateX(0)/yPercent(0) inline transform sitting on
+// .cube-face-grid forever (GSAP keeps re-writing it on subsequent ticks,
+// which trumps the plain CSS .cube-done override no matter what — inline
+// style always wins), which caused two real bugs: the CTA section
+// overlapping the grid (.cube-stage also had a stray inline pin height
+// stuck at one viewport tall, so its layout height never grew to match
+// the grid's real content height once static), and .filters' position:
+// sticky silently not sticking (a transform on ANY ancestor — even a
+// couple degrees of leftover rotateX — breaks sticky's containing-block
+// calculation). tl.progress(1) snaps the scrub to its true end state
+// synchronously, then gsap.set(...,{clearProps:...}) strips the inline
+// styles entirely so the .cube-done CSS rules (position:static,
+// transform:none, height:auto) can actually take effect.
 ScrollTrigger.matchMedia({
   '(min-width: 641px)': function() {
     const stage = document.getElementById('cubeStage');
     const tl = gsap.timeline({
       scrollTrigger:{
         trigger:'#cubeStage', start:'top top', end:'+=100%', scrub:1, pin:true, anticipatePin:1,
-        onLeave: () => stage.classList.add('cube-done'),
-        onEnterBack: () => stage.classList.remove('cube-done')
+        onLeave: () => {
+          tl.progress(1);
+          gsap.set(stage, {clearProps:'height,transform'});
+          gsap.set('.cube-face-grid', {clearProps:'all'});
+          stage.classList.add('cube-done');
+          // #cubeStage's real content height only grows to its full,
+          // un-clipped size once .cube-done's CSS takes effect (position:
+          // static + height:auto on .cube-face-grid) — but the pin-spacer
+          // div ScrollTrigger auto-wrapped #cubeStage in was sized ONCE,
+          // when the pin started, to exactly one viewport (plus its own
+          // reserved scroll-distance padding). It has no way to know
+          // #cubeStage just grew, so without this refresh() the spacer
+          // stays stuck at its original (too-short) height and .cta —
+          // positioned right after the spacer, not after #cubeStage
+          // itself — starts overlapping the now-taller grid below it.
+          // rAF-deferred so the browser gets one frame to actually reflow
+          // #cubeStage at its new height before ScrollTrigger re-measures it.
+          requestAnimationFrame(() => ScrollTrigger.refresh());
+        },
+        onEnterBack: () => {
+          stage.classList.remove('cube-done');
+          requestAnimationFrame(() => ScrollTrigger.refresh());
+        }
       }
     });
     gsap.set('.cube-face-grid', {yPercent:100});
