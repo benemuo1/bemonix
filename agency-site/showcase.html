@@ -584,18 +584,19 @@ gsap.from('.page-header p, .header-meta', {y:30, opacity:0, duration:.8, stagger
 // CSS), so that workaround is gone: the grid is meant to be visible —
 // dim, tilted, stacked right under the header — from the very first frame,
 // same as the reference screenshot, not hidden until it's mostly settled.
-// Starting opacity raised from .25 to .55 (and scale from .82 to .9) — at
-// .25 the grid read as blurred/hazy rather than just "dim" before any
-// scroll happened, since a low-opacity image over a busy background loses
-// most of its contrast/detail; .55 keeps the tilted-stacked-behind-the-
-// header look but the tiles are still clearly legible at rest.
+// Starting opacity raised from .25 to .55, then nudged up again to .65
+// (and scale from .82 to .9) — at .25 the grid read as blurred/hazy
+// rather than just "dim" before any scroll happened, since a low-opacity
+// image over a busy background loses most of its contrast/detail; .65
+// keeps the tilted-stacked-behind-the-header look but the tiles are
+// clearly legible at rest.
 // scrub:1 (raised from .6) adds a bit more smoothing lag between raw scroll
 // deltas and the tween's progress — combined with .grid's will-change (see
 // its CSS), this is what fixed the choppiness: coarse/jumpy scroll input
 // (trackpad or mouse-wheel "steps") was driving a big, expensive-to-
 // recomposite element frame-for-frame with no smoothing to absorb it.
 gsap.fromTo('.grid',
-  {rotateX:32, rotateZ:14, y:'-65vh', opacity:.55, scale:.9},
+  {rotateX:32, rotateZ:14, y:'-65vh', opacity:.65, scale:.9},
   {rotateX:0, rotateZ:0, y:0, opacity:1, scale:1, ease:'none',
     scrollTrigger:{trigger:'.grid-wrap', start:'top 95%', end:'top 35%', scrub:1}}
 );
