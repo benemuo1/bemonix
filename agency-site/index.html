@@ -256,7 +256,7 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
   const video = document.getElementById('heroVideo');
   const logo = document.querySelector('nav .logo');
   if (!video || !logo) return;
-  const reveal = () => gsap.to(logo, {opacity:1, duration:.35, ease:'power1.out'});
+  const reveal = () => gsap.to(logo, {opacity:1, duration:.15, ease:'power1.out'});
   video.addEventListener('ended', reveal, {once:true});
   video.addEventListener('error', reveal, {once:true});
 })();
