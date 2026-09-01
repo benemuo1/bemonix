@@ -55,7 +55,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;displ
 /* Fixed header. Frosted-glass background (blur) so it stays legible over
    whatever scrolls underneath it — swap the logo file via nav .logo img
    src in the HTML, not here. */
-nav{position:fixed;top:0;width:100%;height:90px;padding:0 3rem;display:flex;justify-content:space-between;align-items:center;z-index:200;background:rgba(255,247,226,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1} /* height is fixed on purpose — the logo is taller than the bar and is allowed to overflow it (see nav .logo below) rather than stretching the bar to match */
+nav{position:fixed;top:0;width:100%;height:90px;padding:0 3rem;display:flex;justify-content:space-between;align-items:center;z-index:200;background:rgba(255,247,226,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)} /* height is fixed on purpose — the logo is taller than the bar and is allowed to overflow it (see nav .logo below) rather than stretching the bar to match */
+/* The gold divider line is a separate absolutely-positioned element here
+   (not nav's own border, like the other five pages use) specifically so
+   it can start hidden and fade in together with the logo/links/CTA below
+   instead of being visible immediately — border-image can't be faded via
+   opacity without also fading whatever else is on that border. */
+.nav-divider{position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;pointer-events:none}
 nav .logo{display:block;height:74px;width:auto;flex-shrink:0;opacity:0} /* this page uses the cube-only mark (not the full wordmark lockup the other five pages use), whose glyph fills nearly its whole canvas — sized to sit inside the 90px nav bar rather than deliberately overflowing it like the wordmark does elsewhere, since at wordmark-height this glyph would overflow past the top of the viewport itself, not just the nav box. Starts hidden (opacity:0) — the nav slot stays blank until the hero video finishes playing, then fades in (see "HERO — nav logo reveal" in <script>); pre-hidden here rather than only via JS/GSAP so there's no flash-of-visible-logo before that script runs */
 nav > ul{display:flex;align-items:center;gap:2.5rem;list-style:none;opacity:0} /* fades in alongside nav .logo — see that rule's comment and "HERO — nav logo reveal" in <script>, which now also drives this */
 nav a{color:var(--text);text-decoration:none;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
@@ -155,11 +161,12 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
 
 /* PAGE TRANSITIONS — curtain sweep between internal pages, shared across
    all six site pages (identical block in each — keep them in sync if you
-   change it). Every page starts fully covering the viewport (.pt-frame
-   opacity:1, translateY(0)) and sweeps away on load — see "PAGE
-   TRANSITIONS" in <script> for the entrance/exit choreography and why
-   some destinations get a slower, held treatment and others a snappier
-   one, instead of the browser's own harsh unstyled reload on every click.
+   change it), EXCEPT this page never plays the curtain on its OWN load —
+   the video is already this page's entrance moment, so it starts parked
+   off-screen (translateY(-100%), .pt-frame opacity:0) instead of covering
+   like the other five pages do. It still exists here purely for the EXIT
+   side: clicking any internal link animates it back down to cover before
+   navigating away — see "PAGE TRANSITIONS" in <script>.
 
    .pt-frame is a still PNG of the hero video's own last frame (settled
    cube + BEMONIX wordmark, extracted from Cube_rolls_and_transforms_*.mp4
@@ -170,14 +177,15 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
    directly from that same still's background, so the two match exactly
    and the still's edges disappear into the curtain with zero visible
    seam, leaving just the dark linework floating on the curtain. */
-.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(0)}
-.pt-frame{width:clamp(320px,42vw,560px);aspect-ratio:1280/420;object-fit:cover;object-position:center;opacity:1;-webkit-mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%);mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%)}
+.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(-100%)}
+.pt-frame{width:clamp(320px,42vw,560px);aspect-ratio:1280/420;object-fit:cover;object-position:center;opacity:0;-webkit-mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%);mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%)}
 </style>
 </head>
 <body>
 <div class="page-transition" id="pageTransition"><img class="pt-frame" src="../Screenshots/hero-video-lastframe.png" alt=""></div>
 
 <nav>
+  <div class="nav-divider"></div>
   <a href="index.html"><img class="logo" src="../Screenshots/cube-logo-upscaled-transparent.png" alt="Bemonix"></a>
   <ul>
     <li class="nav-dropdown">
@@ -224,12 +232,12 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 // ── PAGE TRANSITIONS — curtain sweep between internal pages ────────────────────
-// #pageTransition starts covering the viewport with .pt-frame already visible
-// (see its CSS comment), then sweeps away on load (ENTRANCE) — runs on every
-// load of every page, not just internal-link arrivals, so it reads the same
-// regardless of how you got here. Clicking any internal same-folder .html
-// link (EXIT) reverses it: sweeps back down to cover, then navigates. This
-// same block is duplicated identically across all six site pages.
+// #pageTransition starts parked off-screen on THIS page only — see its CSS
+// comment for why (the hero video is already this page's entrance, so there's
+// no ENTRANCE sweep here, unlike the other five pages). Clicking any internal
+// same-folder .html link (EXIT) still animates it down to cover before
+// navigating away, exactly like everywhere else — this block is otherwise
+// duplicated identically across all six site pages.
 //
 // Destination decides pacing: showcase.html/featured.html (the "Work" pages)
 // get the slower FULL treatment with a held beat on the logo — these are the
@@ -242,12 +250,6 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
   if (!overlay || !frame) return;
 
   const FULL_SPEED_PAGES = ['showcase.html', 'featured.html'];
-  const thisPage = location.pathname.split('/').pop();
-  const isFullEntrance = FULL_SPEED_PAGES.includes(thisPage);
-
-  gsap.timeline({delay: isFullEntrance ? .2 : .05})
-    .to(frame, {opacity:0, duration: isFullEntrance ? .35 : .2})
-    .to(overlay, {y:'-100%', duration: isFullEntrance ? .7 : .35, ease:'power2.inOut'}, '-=.1');
 
   document.querySelectorAll('a[href]').forEach(link => {
     const href = link.getAttribute('href');
@@ -263,8 +265,9 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
           .to(frame, {opacity:1, duration:.45, ease:'power1.out'})
           .to({}, {duration:.3}); // hold the settled frame on screen a beat before navigating
       } else {
-        tl.to(overlay, {y:'0%', duration:.25, ease:'power2.inOut'})
-          .to(frame, {opacity:1, duration:.2, ease:'power1.out'});
+        tl.to(overlay, {y:'0%', duration:.4, ease:'power2.inOut'})
+          .to(frame, {opacity:1, duration:.3, ease:'power1.out'})
+          .to({}, {duration:.1}); // brief hold so navigation doesn't cut in the instant the frame finishes appearing
       }
     });
   });
@@ -318,6 +321,7 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
   const logo = document.querySelector('nav .logo');
   const navLinks = document.querySelector('nav > ul');
   const navActions = document.querySelector('.nav-actions');
+  const navDivider = document.querySelector('.nav-divider');
   if (!video || !logo) return;
   const XFINISHED_T = 2.625;
   let revealed = false;
@@ -325,7 +329,7 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
     if (revealed) return;
     revealed = true;
     gsap.timeline()
-      .to([logo, navLinks, navActions], {opacity:1, duration:.5, ease:'sine.out'})
+      .to([logo, navLinks, navActions, navDivider], {opacity:1, duration:.5, ease:'sine.out'})
       .fromTo('.hero-bar', {scaleX:0}, {scaleX:1, duration:.7, ease:'power2.out'}, '-=.1')
       .addLabel('lineDrawn')
       .fromTo('.hero-content p', {y:24, opacity:0}, {y:0, opacity:1, duration:.6, ease:'power2.out'}, 'lineDrawn-=.15')

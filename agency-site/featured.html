@@ -349,8 +349,8 @@ gsap.registerPlugin(ScrollTrigger);
   const isFullEntrance = FULL_SPEED_PAGES.includes(thisPage);
 
   gsap.timeline({delay: isFullEntrance ? .2 : .05})
-    .to(frame, {opacity:0, duration: isFullEntrance ? .35 : .2})
-    .to(overlay, {y:'-100%', duration: isFullEntrance ? .7 : .35, ease:'power2.inOut'}, '-=.1');
+    .to(frame, {opacity:0, duration: isFullEntrance ? .35 : .28})
+    .to(overlay, {y:'-100%', duration: isFullEntrance ? .7 : .5, ease:'power2.inOut'}, '-=.1');
 
   document.querySelectorAll('a[href]').forEach(link => {
     const href = link.getAttribute('href');
@@ -366,8 +366,9 @@ gsap.registerPlugin(ScrollTrigger);
           .to(frame, {opacity:1, duration:.45, ease:'power1.out'})
           .to({}, {duration:.3}); // hold the settled frame on screen a beat before navigating
       } else {
-        tl.to(overlay, {y:'0%', duration:.25, ease:'power2.inOut'})
-          .to(frame, {opacity:1, duration:.2, ease:'power1.out'});
+        tl.to(overlay, {y:'0%', duration:.4, ease:'power2.inOut'})
+          .to(frame, {opacity:1, duration:.3, ease:'power1.out'})
+          .to({}, {duration:.1}); // brief hold so navigation doesn't cut in the instant the frame finishes appearing
       }
     });
   });
