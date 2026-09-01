@@ -56,12 +56,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;displ
    whatever scrolls underneath it — swap the logo file via nav .logo img
    src in the HTML, not here. */
 nav{position:fixed;top:0;width:100%;height:90px;padding:0 3rem;display:flex;justify-content:space-between;align-items:center;z-index:200;background:rgba(255,247,226,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)} /* height is fixed on purpose — the logo is taller than the bar and is allowed to overflow it (see nav .logo below) rather than stretching the bar to match */
-/* The gold divider line is a separate absolutely-positioned element here
-   (not nav's own border, like the other five pages use) specifically so
-   it can start hidden and fade in together with the logo/links/CTA below
-   instead of being visible immediately — border-image can't be faded via
-   opacity without also fading whatever else is on that border. */
-.nav-divider{position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;pointer-events:none}
 nav .logo{display:block;height:74px;width:auto;flex-shrink:0;opacity:0} /* this page uses the cube-only mark (not the full wordmark lockup the other five pages use), whose glyph fills nearly its whole canvas — sized to sit inside the 90px nav bar rather than deliberately overflowing it like the wordmark does elsewhere, since at wordmark-height this glyph would overflow past the top of the viewport itself, not just the nav box. Starts hidden (opacity:0) — the nav slot stays blank until the hero video finishes playing, then fades in (see "HERO — nav logo reveal" in <script>); pre-hidden here rather than only via JS/GSAP so there's no flash-of-visible-logo before that script runs */
 nav > ul{display:flex;align-items:center;gap:2.5rem;list-style:none;opacity:0} /* fades in alongside nav .logo — see that rule's comment and "HERO — nav logo reveal" in <script>, which now also drives this */
 nav a{color:var(--text);text-decoration:none;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
@@ -111,7 +105,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
   nav{padding:0 1.5rem}
   nav .logo{height:58px}
   .nav-toggle{display:flex}
-  nav > ul{display:none;position:absolute;top:90px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:rgba(255,247,226,.98);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1;padding:.5rem 1.5rem 1.5rem;box-shadow:0 20px 40px rgba(0,0,0,.15);max-height:calc(100vh - 90px);overflow-y:auto}
+  nav > ul{display:none;position:absolute;top:90px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:rgba(255,247,226,.98);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:.5rem 1.5rem 1.5rem;box-shadow:0 20px 40px rgba(0,0,0,.15);max-height:calc(100vh - 90px);overflow-y:auto}
   nav.nav-open > ul{display:flex}
   nav > ul > li{width:100%}
   nav > ul > li > a{display:block;padding:.9rem 0;border-bottom:1px solid rgba(76,16,42,.08)}
@@ -185,7 +179,6 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
 <div class="page-transition" id="pageTransition"><img class="pt-frame" src="../Screenshots/hero-video-lastframe.png" alt=""></div>
 
 <nav>
-  <div class="nav-divider"></div>
   <a href="index.html"><img class="logo" src="../Screenshots/cube-logo-upscaled-transparent.png" alt="Bemonix"></a>
   <ul>
     <li class="nav-dropdown">
@@ -321,7 +314,6 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
   const logo = document.querySelector('nav .logo');
   const navLinks = document.querySelector('nav > ul');
   const navActions = document.querySelector('.nav-actions');
-  const navDivider = document.querySelector('.nav-divider');
   if (!video || !logo) return;
   const XFINISHED_T = 2.625;
   let revealed = false;
@@ -329,7 +321,7 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
     if (revealed) return;
     revealed = true;
     gsap.timeline()
-      .to([logo, navLinks, navActions, navDivider], {opacity:1, duration:.5, ease:'sine.out'})
+      .to([logo, navLinks, navActions], {opacity:1, duration:.5, ease:'sine.out'})
       .fromTo('.hero-bar', {scaleX:0}, {scaleX:1, duration:.7, ease:'power2.out'}, '-=.1')
       .addLabel('lineDrawn')
       .fromTo('.hero-content p', {y:24, opacity:0}, {y:0, opacity:1, duration:.6, ease:'power2.out'}, 'lineDrawn-=.15')

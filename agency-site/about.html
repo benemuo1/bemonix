@@ -29,7 +29,7 @@
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
 
-nav{position:fixed;top:0;width:100%;height:90px;padding:0 3rem;display:flex;justify-content:space-between;align-items:center;z-index:200;background:rgba(255,247,226,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1}
+nav{position:fixed;top:0;width:100%;height:90px;padding:0 3rem;display:flex;justify-content:space-between;align-items:center;z-index:200;background:rgba(255,247,226,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 nav .logo{display:block;height:150px;width:auto;flex-shrink:0}
 nav > ul{display:flex;align-items:center;gap:2.5rem;list-style:none}
 nav a{color:var(--text);text-decoration:none;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
@@ -79,7 +79,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
   nav{padding:0 1.5rem}
   nav .logo{height:100px}
   .nav-toggle{display:flex}
-  nav > ul{display:none;position:absolute;top:90px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:rgba(255,247,226,.98);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1;padding:.5rem 1.5rem 1.5rem;box-shadow:0 20px 40px rgba(0,0,0,.15);max-height:calc(100vh - 90px);overflow-y:auto}
+  nav > ul{display:none;position:absolute;top:90px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:rgba(255,247,226,.98);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:.5rem 1.5rem 1.5rem;box-shadow:0 20px 40px rgba(0,0,0,.15);max-height:calc(100vh - 90px);overflow-y:auto}
   nav.nav-open > ul{display:flex}
   nav > ul > li{width:100%}
   nav > ul > li > a{display:block;padding:.9rem 0;border-bottom:1px solid rgba(76,16,42,.08)}
@@ -129,10 +129,12 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
 /* PAGE TRANSITIONS — curtain sweep between internal pages, shared across
    all six site pages (identical block in each — keep them in sync if you
    change it). Every page starts fully covering the viewport (.pt-frame
-   opacity:1, translateY(0)) and sweeps away on load — see "PAGE
-   TRANSITIONS" in <script> for the entrance/exit choreography and why
-   some destinations get a slower, held treatment and others a snappier
-   one, instead of the browser's own harsh unstyled reload on every click.
+   opacity:1, translateY(0)) and sweeps away once the page has actually
+   finished loading — see "PAGE TRANSITIONS" in <script> for why that's
+   real load completion rather than a fixed timer, the entrance/exit
+   choreography, and why some destinations get a slower, held treatment
+   and others a snappier one, instead of the browser's own harsh
+   unstyled reload on every click.
 
    .pt-frame is a still PNG of the hero video's own last frame (settled
    cube + BEMONIX wordmark, extracted from Cube_rolls_and_transforms_*.mp4
@@ -142,13 +144,32 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
    at the edges, and the curtain's own background (#fbf2e0) is sampled
    directly from that same still's background, so the two match exactly
    and the still's edges disappear into the curtain with zero visible
-   seam, leaving just the dark linework floating on the curtain. */
-.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(0)}
+   seam, leaving just the dark linework floating on the curtain.
+
+   .pt-status is the "still loading — check your connection" message
+   (see the inline script right after this element in <body>) — stays at
+   opacity:0 until a plain vanilla-JS timeout (deliberately NOT dependent
+   on the GSAP <script> below, so it still fires even if that CDN request
+   itself is what's slow/blocked) adds .show after ~4s of no load event. */
+.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;pointer-events:none;transform:translateY(0)}
 .pt-frame{width:clamp(320px,42vw,560px);aspect-ratio:1280/420;object-fit:cover;object-position:center;opacity:1;-webkit-mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%);mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%)}
+.pt-status{margin:0;font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(76,16,42,.6);opacity:0;transition:opacity .5s ease}
+.pt-status.show{opacity:1}
 </style>
 </head>
 <body>
-<div class="page-transition" id="pageTransition"><img class="pt-frame" src="../Screenshots/hero-video-lastframe.png" alt=""></div>
+<div class="page-transition" id="pageTransition"><img class="pt-frame" src="../Screenshots/hero-video-lastframe.png" alt=""><p class="pt-status" id="ptStatus"></p></div>
+<script>
+// Plain JS, no GSAP dependency (GSAP loads further down and could itself
+// be the slow/blocked resource) — shows a connectivity message if the
+// page is still loading 4s in, instead of a silent blank curtain.
+// Cleared by "PAGE TRANSITIONS" in the main <script> once the real
+// load-based reveal actually fires.
+window.__ptStatusTimer = setTimeout(function() {
+  var el = document.getElementById('ptStatus');
+  if (el) { el.textContent = 'Still loading — check your connection'; el.classList.add('show'); }
+}, 4000);
+</script>
 
 <nav>
   <a href="index.html"><img class="logo" src="../Screenshots/bemonix-logo-transparent.png" alt="Bemonix"></a>
@@ -207,7 +228,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 // ── PAGE TRANSITIONS — curtain sweep between internal pages ────────────────────
 // #pageTransition starts covering the viewport with .pt-frame already visible
-// (see its CSS comment), then sweeps away on load (ENTRANCE) — runs on every
+// (see its CSS comment), then sweeps away once the page has ACTUALLY finished
+// loading (ENTRANCE) — window 'load' (all images/video/CDN scripts done), not
+// a fixed timer, so a slow connection keeps the curtain up instead of clearing
+// early over a still-loading page; readyState check covers the common case
+// where load has already fired by the time this script runs. Runs on every
 // load of every page, not just internal-link arrivals, so it reads the same
 // regardless of how you got here. Clicking any internal same-folder .html
 // link (EXIT) reverses it: sweeps back down to cover, then navigates. This
@@ -221,15 +246,22 @@ gsap.registerPlugin(ScrollTrigger);
 (function initPageTransitions() {
   const overlay = document.getElementById('pageTransition');
   const frame = overlay ? overlay.querySelector('.pt-frame') : null;
+  const status = document.getElementById('ptStatus');
   if (!overlay || !frame) return;
 
   const FULL_SPEED_PAGES = ['showcase.html', 'featured.html'];
   const thisPage = location.pathname.split('/').pop();
   const isFullEntrance = FULL_SPEED_PAGES.includes(thisPage);
 
-  gsap.timeline({delay: isFullEntrance ? .2 : .05})
-    .to(frame, {opacity:0, duration: isFullEntrance ? .35 : .28})
-    .to(overlay, {y:'-100%', duration: isFullEntrance ? .7 : .5, ease:'power2.inOut'}, '-=.1');
+  const reveal = () => {
+    clearTimeout(window.__ptStatusTimer);
+    if (status) status.classList.remove('show');
+    gsap.timeline({delay: isFullEntrance ? .2 : .05})
+      .to(frame, {opacity:0, duration: isFullEntrance ? .35 : .28})
+      .to(overlay, {y:'-100%', duration: isFullEntrance ? .7 : .5, ease:'power2.inOut'}, '-=.1');
+  };
+  if (document.readyState === 'complete') reveal();
+  else window.addEventListener('load', reveal, {once:true});
 
   document.querySelectorAll('a[href]').forEach(link => {
     const href = link.getAttribute('href');
