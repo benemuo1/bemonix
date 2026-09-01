@@ -245,17 +245,26 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
   }));
 })();
 
-// ── HERO — nav reveal ────────────────────────────────────────────────────────
-// nav .logo, nav > ul, and .nav-actions all start opacity:0 (see their CSS
-// comments) — the whole nav bar stays blank until the "X" finishes writing
-// in the hero video, then everything fades in together. NOT tied to the
-// video's 'ended' event — the video (24fps, 111 frames / 4.63s total) holds
-// on the fully-settled logo for ~2s before it actually ends, so waiting for
-// 'ended' reads as a laggy pause after the wordmark is already done.
-// Frame-by-frame inspection of the source video found the X's stroke
-// finishes drawing on by frame 63 (63/24 = 2.625s) — XFINISHED_T below —
-// everything after that is just the video holding.
-(function initHeroNavReveal() {
+// ── HERO REVEAL — nav + headline/tagline/bar/CTA ───────────────────────────────
+// Everything above the fold (nav .logo/ul/.nav-actions, plus .hero-content's
+// h1/p/.hero-bar/.hero-cta a) starts hidden via plain CSS (opacity:0 /
+// scaleX(0)) and stays that way until the "X" finishes writing in the hero
+// video — the video plays essentially alone first, THEN the rest of the page
+// fades in as one sequence, instead of racing in on its own page-load timer
+// while the video is still mid-animation. NOT tied to the video's 'ended'
+// event — the video (24fps, 111 frames / 4.63s total) holds on the
+// fully-settled logo for ~2s before it actually ends, so waiting for 'ended'
+// reads as a laggy pause after the wordmark is already done. Frame-by-frame
+// inspection of the source video found the X's stroke finishes drawing on by
+// frame 63 (63/24 = 2.625s) — XFINISHED_T below.
+//
+// fromTo (not from) for the hero-content tweens: gsap.from() alone would be
+// wrong here — it reads the element's CURRENT style as its animation target,
+// and since that current style is already the hidden CSS state, a .from()
+// would just animate from hidden to hidden (invisible the whole time). fromTo
+// pins the visible end state explicitly, independent of whatever the CSS
+// starts at.
+(function initHeroReveal() {
   const video = document.getElementById('heroVideo');
   const logo = document.querySelector('nav .logo');
   const navLinks = document.querySelector('nav > ul');
@@ -266,7 +275,12 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
   const reveal = () => {
     if (revealed) return;
     revealed = true;
-    gsap.to([logo, navLinks, navActions], {opacity:1, duration:.5, ease:'sine.out'});
+    gsap.timeline()
+      .to([logo, navLinks, navActions], {opacity:1, duration:.5, ease:'sine.out'})
+      .fromTo('.hero-content h1', {y:60, opacity:0}, {y:0, opacity:1, duration:1.2, ease:'power3.out'}, '-=.2')
+      .fromTo('.hero-content p',  {y:20, opacity:0}, {y:0, opacity:1, duration:.7}, '-=.6')
+      .fromTo('.hero-bar',        {scaleX:0},        {scaleX:1, duration:.9}, '-=.4')
+      .fromTo('.hero-cta a',      {y:20, opacity:0}, {y:0, opacity:1, stagger:.12, duration:.7}, '-=.5');
   };
   // rAF polling, not 'timeupdate' — 'timeupdate' only fires a few times a
   // second, which is too coarse to catch XFINISHED_T right when it happens.
@@ -278,19 +292,6 @@ footer{padding:1.2rem 3rem;border-top:1px dashed rgba(201,162,39,.35);text-align
   requestAnimationFrame(checkProgress);
   video.addEventListener('error', reveal, {once:true});
 })();
-
-// ── HERO ENTRANCE ─────────────────────────────────────────────────────────────
-// fromTo (not from) throughout: h1/p/hero-bar/hero-cta a all start hidden via
-// plain CSS (opacity:0 / scaleX(0)) so there's no flash-of-visible-content
-// before this script runs. gsap.from() alone would be wrong here — it reads
-// the element's CURRENT style as its animation target, and since that
-// current style is already the hidden CSS state, a .from() would just
-// animate from hidden to hidden (invisible the whole time). fromTo pins the
-// visible end state explicitly, independent of whatever the CSS starts at.
-gsap.fromTo('.hero-content h1', {y:60, opacity:0}, {y:0, opacity:1, duration:1.5, delay:.4, ease:'power3.out'});
-gsap.fromTo('.hero-content p',  {y:20, opacity:0}, {y:0, opacity:1, duration:.8,  delay:1});
-gsap.fromTo('.hero-bar',        {scaleX:0},        {scaleX:1, duration:1, delay:1.3});
-gsap.fromTo('.hero-cta a',      {y:20, opacity:0}, {y:0, opacity:1, stagger:.12, duration:.7, delay:1.6});
 
 // ── HERO — page transition (View Our Work → showcase.html) ────────────────────
 // Instead of the browser's harsh unstyled reload, play the curtain
