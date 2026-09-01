@@ -199,9 +199,30 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
   html,body{height:auto;overflow:visible}
   .services{flex:none;min-height:100vh;min-height:100dvh;padding:110px 1.5rem 2.5rem}
 }
+
+/* PAGE TRANSITIONS — curtain sweep between internal pages, shared across
+   all six site pages (identical block in each — keep them in sync if you
+   change it). Every page starts fully covering the viewport (.pt-frame
+   opacity:1, translateY(0)) and sweeps away on load — see "PAGE
+   TRANSITIONS" in <script> for the entrance/exit choreography and why
+   some destinations get a slower, held treatment and others a snappier
+   one, instead of the browser's own harsh unstyled reload on every click.
+
+   .pt-frame is a still PNG of the hero video's own last frame (settled
+   cube + BEMONIX wordmark, extracted from Cube_rolls_and_transforms_*.mp4
+   — see hero-video-lastframe.png), cropped/masked the same way as
+   index.html's .hero-logo since it's a still of that same video — the
+   mask feathers the still's own flat cream background out to transparent
+   at the edges, and the curtain's own background (#fbf2e0) is sampled
+   directly from that same still's background, so the two match exactly
+   and the still's edges disappear into the curtain with zero visible
+   seam, leaving just the dark linework floating on the curtain. */
+.page-transition{position:fixed;inset:0;z-index:9999;background:#fbf2e0;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(0)}
+.pt-frame{width:clamp(320px,42vw,560px);aspect-ratio:1280/420;object-fit:cover;object-position:center;opacity:1;-webkit-mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%);mask-image:radial-gradient(ellipse 65% 70% at center,#000 68%,transparent 92%)}
 </style>
 </head>
 <body>
+<div class="page-transition" id="pageTransition"><img class="pt-frame" src="../Screenshots/hero-video-lastframe.png" alt=""></div>
 <!-- Distortion filter for the single .svc-preview card (see the "SERVICES"
      CSS comment above for how it gets used) — feTurbulence + feDisplacementMap,
      with `scale` animated live on mousemove by the JS at the bottom of <body>. -->
@@ -355,6 +376,53 @@ footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
 gsap.registerPlugin(ScrollTrigger);
+
+// ── PAGE TRANSITIONS — curtain sweep between internal pages ────────────────────
+// #pageTransition starts covering the viewport with .pt-frame already visible
+// (see its CSS comment), then sweeps away on load (ENTRANCE) — runs on every
+// load of every page, not just internal-link arrivals, so it reads the same
+// regardless of how you got here. Clicking any internal same-folder .html
+// link (EXIT) reverses it: sweeps back down to cover, then navigates. This
+// same block is duplicated identically across all six site pages.
+//
+// Destination decides pacing: showcase.html/featured.html (the "Work" pages)
+// get the slower FULL treatment with a held beat on the logo — these are the
+// flagship entry points, worth the ~2s branded pause. Everywhere else gets a
+// snappier FAST version with no hold, so routine nav clicks between the other
+// four pages don't carry that same tax on every click.
+(function initPageTransitions() {
+  const overlay = document.getElementById('pageTransition');
+  const frame = overlay ? overlay.querySelector('.pt-frame') : null;
+  if (!overlay || !frame) return;
+
+  const FULL_SPEED_PAGES = ['showcase.html', 'featured.html'];
+  const thisPage = location.pathname.split('/').pop();
+  const isFullEntrance = FULL_SPEED_PAGES.includes(thisPage);
+
+  gsap.timeline({delay: isFullEntrance ? .2 : .05})
+    .to(frame, {opacity:0, duration: isFullEntrance ? .35 : .2})
+    .to(overlay, {y:'-100%', duration: isFullEntrance ? .7 : .35, ease:'power2.inOut'}, '-=.1');
+
+  document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href || !/^[a-z-]+\.html$/i.test(href)) return; // same-folder page links only — skips mailto:, external demo links, etc.
+    link.addEventListener('click', e => {
+      // Let modified clicks (open in new tab, etc.) behave normally.
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const full = FULL_SPEED_PAGES.includes(href);
+      const tl = gsap.timeline({onComplete: () => { window.location.href = href; }});
+      if (full) {
+        tl.to(overlay, {y:'0%', duration:.6, ease:'power2.inOut'})
+          .to(frame, {opacity:1, duration:.45, ease:'power1.out'})
+          .to({}, {duration:.3}); // hold the settled frame on screen a beat before navigating
+      } else {
+        tl.to(overlay, {y:'0%', duration:.25, ease:'power2.inOut'})
+          .to(frame, {opacity:1, duration:.2, ease:'power1.out'});
+      }
+    });
+  });
+})();
 
 // ── MOBILE NAV TOGGLE ────────────────────────────────────────────────────────
 // Hamburger just toggles a class on <nav> — the CSS at max-width:900px reuses
