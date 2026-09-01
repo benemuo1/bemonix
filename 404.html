@@ -1,0 +1,153 @@
+<!--
+  BEMONIX — 404 Not Found (404.html)
+  =====================================
+  Cloudflare Pages convention: a 404.html file at the project's deploy
+  ROOT (this file's own location, NOT inside agency-site/) is served
+  automatically for any request path that doesn't match a real file,
+  in place of Cloudflare's own generic default 404 page.
+
+  Because Cloudflare can serve this file for a broken URL at ANY depth
+  (e.g. /agency-site/typo.html, /voxel-agency/missing.html, /whatever),
+  every asset/link below uses an ABSOLUTE path (leading "/"), never a
+  relative one like the other six pages use — a relative path here
+  would resolve against whatever broken URL the visitor actually hit,
+  not against this file's own location.
+
+  Deliberately simpler than the other six pages: no page-transition
+  curtain (see agency-site/index.html's "PAGE TRANSITIONS" comment for
+  that system) and no content hidden behind JS-driven opacity — this is
+  the "something went wrong" page, so it has to render correctly even
+  if the GSAP CDN request itself fails. The one bit of motion (a fade
+  on .nf-content below) is a plain CSS @keyframes animation, not GSAP,
+  for exactly that reason. Shares the same 5-variable color system as
+  the other six pages — see agency-site/index.html's file header for
+  what each variable controls.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEMONIX — Page Not Found</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Inter:wght@200;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--accent:#761941;--bg:#fff7e2;--surface:#ffffff;--muted:rgba(76,16,42,.55);--text:#4c102a;--gold:#c9a227}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;flex-direction:column}
+
+nav{position:fixed;top:0;width:100%;height:90px;padding:0 3rem;display:flex;justify-content:space-between;align-items:center;z-index:200;background:rgba(255,247,226,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+nav .logo{display:block;height:150px;width:auto;flex-shrink:0}
+nav > ul{display:flex;align-items:center;gap:2.5rem;list-style:none}
+nav a{color:var(--text);text-decoration:none;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
+nav .nav-cta{padding:.5rem 1.5rem;border:1px solid rgba(76,16,42,.3);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--text);transition:border-color .3s,color .3s}
+nav .nav-cta:hover{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);border-color:var(--gold);color:var(--gold)}
+.nav-actions{display:flex;align-items:center;gap:1rem}
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:32px;height:32px;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0}
+.nav-toggle span{display:block;width:100%;height:2px;background:var(--text);transition:transform .3s,opacity .3s}
+nav.nav-open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+nav.nav-open .nav-toggle span:nth-child(2){opacity:0}
+nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+@media(max-width:1150px) and (min-width:901px){
+  nav{padding:0 1.75rem}
+  nav .logo{height:110px}
+  nav > ul{gap:1.5rem}
+  nav a{font-size:.62rem}
+  nav .nav-cta{padding:.4rem 1.1rem;font-size:.6rem}
+}
+
+@media(max-width:900px){
+  nav{padding:0 1.5rem}
+  nav .logo{height:100px}
+  .nav-toggle{display:flex}
+  nav > ul{display:none;position:absolute;top:90px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:rgba(255,247,226,.98);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:.5rem 1.5rem 1.5rem;box-shadow:0 20px 40px rgba(0,0,0,.15);max-height:calc(100vh - 90px);overflow-y:auto}
+  nav.nav-open > ul{display:flex}
+  nav > ul > li{width:100%}
+  nav > ul > li > a{display:block;padding:.9rem 0;border-bottom:1px solid rgba(76,16,42,.08)}
+  nav .nav-cta{padding:.45rem 1rem;font-size:.6rem}
+}
+
+/* NOT FOUND — centered cube mark + 404 message, one screen, no scroll,
+   same convention as the other six pages. */
+.nf{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:90px 3rem 1.5rem;overflow:hidden}
+.nf-blob{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+.nf-blob-1{width:420px;height:420px;top:-120px;left:2%;background:rgba(201,162,39,.16)}
+.nf-blob-2{width:380px;height:380px;bottom:-140px;right:6%;background:rgba(118,25,65,.12)}
+.nf-content{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.2rem;animation:nfFadeUp .8s ease both .1s}
+@keyframes nfFadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.nf-cube{width:clamp(90px,12vw,140px);height:auto}
+.nf-code{font-family:'Jost',sans-serif;font-weight:700;font-size:clamp(3rem,10vw,6rem);line-height:1;letter-spacing:.03em;color:var(--accent)}
+.nf-content h1{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(1.3rem,3.2vw,1.9rem);letter-spacing:.04em;text-transform:uppercase}
+.nf-content p{color:var(--muted);font-size:.85rem;font-weight:200;max-width:420px;line-height:1.6}
+.nf-links{display:flex;gap:1.2rem;margin-top:.6rem;flex-wrap:wrap;justify-content:center}
+.nf-links a{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;padding:.9rem 2rem;border-radius:2px;transition:all .3s}
+.nf-links .btn-primary{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);color:var(--bg);border:1px solid var(--accent)}
+.nf-links .btn-primary:hover{border-color:var(--gold);color:var(--gold)}
+.nf-links .btn-secondary{color:var(--text);border:1px solid rgba(76,16,42,.3)}
+.nf-links .btn-secondary:hover{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);border-color:var(--gold);color:var(--gold)}
+
+footer{padding:1.2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);letter-spacing:.2em;flex-shrink:0}
+
+@media(max-width:640px){
+  html,body{height:auto;overflow:visible}
+  .nf{flex:none;min-height:100vh;min-height:100dvh;padding:110px 1.5rem 2.5rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/"><img class="logo" src="/Screenshots/bemonix-logo-transparent.png" alt="Bemonix"></a>
+  <ul>
+    <li><a href="/agency-site/showcase.html">Work</a></li>
+    <li><a href="/agency-site/about.html">About</a></li>
+    <li><a href="/agency-site/services.html">Services</a></li>
+    <li><a href="/agency-site/contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/agency-site/contact.html" class="nav-cta">Start a Project</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<section class="nf">
+  <div class="nf-blob nf-blob-1"></div>
+  <div class="nf-blob nf-blob-2"></div>
+  <div class="nf-content">
+    <img class="nf-cube" src="/Screenshots/cube-logo-upscaled-transparent.png" alt="Bemonix">
+    <div class="nf-code">404</div>
+    <h1>Page Not Found</h1>
+    <p>The page you're looking for doesn't exist — it may have been moved, renamed, or the link might just be off.</p>
+    <div class="nf-links">
+      <a href="/" class="btn-primary">Back to Home</a>
+      <a href="/agency-site/showcase.html" class="btn-secondary">View Our Work</a>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 BEMONIX · HOUSTON, TX · REMOTE WORLDWIDE</footer>
+
+<script>
+// Plain vanilla JS, no GSAP — see the file header for why this page
+// stays dependency-free. Just the mobile hamburger toggle.
+(function initNavToggle() {
+  var nav = document.querySelector('nav');
+  var toggle = document.getElementById('navToggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', function() {
+    var open = nav.classList.toggle('nav-open');
+    toggle.setAttribute('aria-expanded', open);
+  });
+  Array.prototype.forEach.call(nav.querySelectorAll('ul a'), function(a) {
+    a.addEventListener('click', function() {
+      nav.classList.remove('nav-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
+</body>
+</html>
