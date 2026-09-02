@@ -94,6 +94,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
   nav .nav-dropdown{height:auto;display:block;position:static}
   nav .nav-dropdown > a::after{display:none}
   nav .nav-dropdown-menu{position:static;opacity:1;visibility:visible;transform:none;box-shadow:none;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border:none;padding:0 0 .5rem 1rem;gap:0;min-width:0}
+  nav .nav-dropdown:hover .nav-dropdown-menu{transform:none} /* the desktop hover rule (nav .nav-dropdown:hover .nav-dropdown-menu, higher specificity than the plain rule above since it stacks a pseudo-class on top of the same classes) keeps applying transform:translateX(-50%) even here, since a later same-specificity mobile rule can't out-rank a more specific selector regardless of source order. Left unchecked, hovering "Work" on a mouse-and-narrow-window setup (or the touch-equivalent :hover-on-tap some browsers fire) shifted the whole submenu left by half its own width, off the edge of the now-block-level, full-width layout — this re-zeroes it to match the static rule above */
   nav .nav-dropdown-menu a{padding:.7rem 0;border-bottom:none;font-size:.65rem;color:var(--muted)}
   nav .nav-cta{padding:.45rem 1rem;font-size:.6rem}
 }
@@ -192,7 +193,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .meta-lbl{font-size:.6rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:.2rem}
 
 .filters{padding:1.5rem 3rem;border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1;display:flex;gap:.6rem;flex-wrap:wrap;background:var(--bg);position:relative;z-index:100} /* No longer JS-revealed on its own delay — it's part of .cube-face-grid's content now, so it just rotates into view together with the grid tiles as one unit (see the "CUBE ROLL" comment). position:relative (not sticky) by default on purpose — see .face-released .filters below for why */
-.face-released .filters{position:sticky;top:90px} /* position:sticky only starts behaving here, once the grid has actually released from .cube-face-grid's rotateX transform — sticky's "stick to the viewport" math breaks down while any ancestor still has a transform applied (a well-known CSS interaction, not a bug in this rule), which mid-roll was making the bar stick at some arbitrary in-between point and visually overlap a couple of card rows instead of sitting cleanly at the top of the settled grid. Sticky pins it below the nav while scrolling through the grid once the roll has hand off to normal flow, and — because sticky can only ever stick as far as its own normal-flow position, never past it — scrolling back up to "Our Work" naturally un-sticks it with zero extra code. */
+.face-released .filters{position:sticky;top:90px;margin-top:90px} /* position:sticky only starts behaving here, once the grid has actually released from .cube-face-grid's rotateX transform — sticky's "stick to the viewport" math breaks down while any ancestor still has a transform applied (a well-known CSS interaction, not a bug in this rule), which mid-roll was making the bar stick at some arbitrary in-between point and visually overlap a couple of card rows instead of sitting cleanly at the top of the settled grid. Sticky pins it below the nav while scrolling through the grid once the roll has hand off to normal flow, and — because sticky can only ever stick as far as its own normal-flow position, never past it — scrolling back up to "Our Work" naturally un-sticks it with zero extra code. margin-top:90px is the other half of that fix: the instant the roll releases, .filters' own natural (un-stuck) flow position sits flush at the very top of the settled grid — behind <nav> — so the grid content right after it (the card rows) is laid out assuming filters only needs its own ~107px, with no awareness that sticky is about to visually pin it 90px lower, below nav. Without this margin, row 1 starts before the sticky bar's bottom edge and renders partly hidden under it the instant the roll finishes. The margin reserves that 90px of clearance in the flow too, so row 1 lands flush against the sticky bar's actual bottom edge with zero overlap, from the very first frame after the roll. */
 .filter-btn{padding:.35rem 1rem;border:1px solid var(--surface);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .25s}
 .filter-btn:hover{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);border-color:var(--gold);color:var(--gold)}
 .filter-btn.active{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);border-color:var(--gold);color:var(--gold)}
@@ -586,6 +587,25 @@ function setFilter(cat) {
     c.classList.toggle('hidden', cat !== 'All' && c.dataset.cat !== cat)
   );
   ScrollTrigger.refresh();
+  // Bring the (possibly now much shorter) filtered grid back into view.
+  // Filtering down to a category with only a few entries while scrolled
+  // deep into the full grid doesn't reflow the scroll position on its
+  // own — the filtered result can end entirely above the viewport,
+  // leaving whatever comes after the grid (the CTA section) in frame
+  // instead of any of the actual filtered cards.
+  const firstVisible = document.querySelector('.card:not(.hidden)');
+  if (firstVisible) {
+    const filtersEl = document.getElementById('filters');
+    // Anchored on the first surviving CARD, not on .filters itself — once
+    // .filters is actually stuck (sticky), getBoundingClientRect() always
+    // reports its fixed on-screen position (top:90) no matter where the
+    // page is actually scrolled to, which made an earlier version of this
+    // fix compute a no-op target. A card is never sticky, so its rect
+    // always reflects real document position, however far away we start.
+    const clearance = 90 + (getComputedStyle(filtersEl).position === 'sticky' ? filtersEl.offsetHeight : 0); // 90 = <nav>'s fixed height, always in the way; .filters' own height only matters once it's actually sticky (desktop, post-roll) — see that rule's comment
+    const target = firstVisible.getBoundingClientRect().top + window.scrollY - clearance;
+    if (window.scrollY > target) window.scrollTo({top: target, behavior:'smooth'}); // only scrolls UP when the current position would otherwise leave the filtered grid out of frame — never yanks the view if it's already showing the top of the results
+  }
 }
 
 // Opens the full-screen live-preview overlay. `globalIndex` is the card's
