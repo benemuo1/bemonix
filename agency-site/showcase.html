@@ -683,11 +683,14 @@ gsap.from('.page-header p, .header-meta', {y:30, opacity:0, duration:.8, stagger
 // fire and move the element before the tween had actually finished
 // interpolating to rotateX(0)/yPercent(0), moving something still very
 // slightly tilted.
+// ctaScrollTrigger is set once CUBE ROLL #2 (below) creates its own
+// ScrollTrigger — shared so THIS roll's onLeave/onEnterBack can nudge it,
+// see the onLeave comment just below for why that's necessary.
+let ctaScrollTrigger = null;
 ScrollTrigger.matchMedia({
   '(min-width: 641px)': function() {
     const stage = document.getElementById('cubeStage');
     const faceGrid = document.querySelector('.cube-face-grid');
-    const footer = document.querySelector('footer'); // shared safe anchor — see onLeave comment below
     const tl = gsap.timeline({
       scrollTrigger:{
         trigger:'#cubeStage', start:'top top', end:'+=100%', scrub:1, pin:true, anticipatePin:1,
@@ -699,25 +702,51 @@ ScrollTrigger.matchMedia({
           // itself wrapped in a pin-spacer div by ScrollTrigger, and
           // "after stage" just lands faceGrid as a sibling of #cubeStage
           // WITHIN that spacer — still trapped inside the spacer's own
-          // fixed-size box. #cubeStageCta looked like a safe target to
-          // insert-before instead, but it ISN'T: CUBE ROLL #2's own
-          // ScrollTrigger.matchMedia call also pins #cubeStageCta, which
-          // wraps IT in a pin-spacer too (this runs at page load, before
-          // any scrolling), so by the time onLeave fires here,
-          // #cubeStageCta is no longer a direct body child either — the
-          // exact same trap one level down. <footer> is the one element
-          // in this whole chain that's never a pin trigger, so it's
-          // never wrapped — always a safe, stable anchor to insert
-          // before, no matter how many cube stages sit between here and
-          // it (see CUBE ROLL #2's onLeave, which reparents faceCta the
-          // same way, landing it after faceGrid and before footer).
-          footer.before(faceGrid);
+          // fixed-size box. faceGrid needs to land between the two
+          // pin-spacers — right after #cubeStage's, right before
+          // #cubeStageCta's — so the scroll order reads header-roll, then
+          // the actual grid, then the cta-roll. <footer> looked like a
+          // simpler, always-safe anchor (never a pin trigger, never
+          // wrapped) but using it landed faceGrid AFTER #cubeStageCta's
+          // spacer too, past both rolls entirely — so #cubeStageCta's pin
+          // was firing before the grid was ever reachable in scroll order
+          // ("other sections clipping into view early"). Looking up
+          // #cubeStageCta's live .parentElement here (not cached — this
+          // runs long after both matchMedia setups below have already
+          // wrapped it in its spacer) always resolves to that spacer,
+          // whatever's inside #cubeStageCta at the time.
+          document.getElementById('cubeStageCta').parentElement.before(faceGrid);
           stage.classList.add('cube-done');
+          // CUBE ROLL #2's own pin start ('top top' on #cubeStageCta) was
+          // calculated at page load, before faceGrid ever moved out of
+          // #cubeStage — at that point faceGrid was still position:absolute
+          // inside #cubeStage (contributing zero flow height), so
+          // ScrollTrigger placed #cubeStageCta right after #cubeStage's own
+          // pin-spacer. The instant faceGrid lands in flow just above it
+          // (previous line), #cubeStageCta's TRUE position jumps ~1890px
+          // further down (the grid's real content height) — but nothing
+          // tells ScrollTrigger that unless we ask. Deliberately calling
+          // .refresh() on just THIS ONE ScrollTrigger instance, not the
+          // global ScrollTrigger.refresh() — the earlier "filters
+          // glitching" bug came from a global refresh recalculating
+          // #cubeStage's OWN boundaries while scroll was still actively
+          // straddling them, which could re-cross and re-fire its
+          // callbacks in a loop. #cubeStage's own size never changes (see
+          // its CSS comment), so it doesn't need refreshing, and
+          // refreshing only ctaScrollTrigger can't feed back into itself
+          // this way.
+          if (ctaScrollTrigger) ctaScrollTrigger.refresh();
         },
         onEnterBack: () => {
           faceGrid.classList.remove('face-released');
           stage.appendChild(faceGrid); // move it back inside #cubeStage so the pin/rotation can re-engage
           stage.classList.remove('cube-done');
+          // Mirror of the onLeave refresh above: once faceGrid is back
+          // inside #cubeStage (absolute, zero flow height again),
+          // #cubeStageCta's true position moves back up — refresh so
+          // scrolling back down re-engages roll #2 at the right spot
+          // instead of firing early again off the stale grown-layout value.
+          if (ctaScrollTrigger) ctaScrollTrigger.refresh();
         }
       }
     });
@@ -769,7 +798,8 @@ ScrollTrigger.matchMedia({
     gsap.set(faceCta, {yPercent:100});
     tl2.to('.cube-face-outro', {rotateX:90, yPercent:-100, ease:'none', duration:1}, 0)
        .to(faceCta,            {rotateX:0,  yPercent:0,    ease:'none', duration:1}, 0);
-    return () => { tl2.scrollTrigger.kill(); stage2.classList.remove('cube-done'); };
+    ctaScrollTrigger = tl2.scrollTrigger; // hands this trigger to CUBE ROLL #1's onLeave/onEnterBack above, so they can refresh it once faceGrid's reparenting moves #cubeStageCta's real position — see that comment. Safe to assign plainly (no race): both matchMedia callbacks run synchronously at load, well before any scroll can fire either onLeave.
+    return () => { tl2.scrollTrigger.kill(); stage2.classList.remove('cube-done'); ctaScrollTrigger = null; };
   }
 });
 </script>
