@@ -84,6 +84,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
   nav .nav-dropdown{height:auto;display:block;position:static}
   nav .nav-dropdown > a::after{display:none}
   nav .nav-dropdown-menu{position:static;opacity:1;visibility:visible;transform:none;box-shadow:none;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border:none;padding:0 0 .5rem 1rem;gap:0;min-width:0}
+  nav .nav-dropdown:hover .nav-dropdown-menu{transform:none} /* the desktop hover rule (nav .nav-dropdown:hover .nav-dropdown-menu, higher specificity than the plain rule above since it stacks a pseudo-class on top of the same classes) keeps applying transform:translateX(-50%) even here, since a later same-specificity mobile rule can't out-rank a more specific selector regardless of source order. Left unchecked, hovering "Work" (or its sub-items — hovering a descendant keeps the ancestor's :hover active too) on a mouse-and-narrow-window setup shifted the whole submenu left by half its own width, off the edge of the now-block-level, full-width layout — this re-zeroes it to match the static rule above */
   nav .nav-dropdown-menu a{padding:.7rem 0;border-bottom:none;font-size:.65rem;color:var(--muted)}
   nav .nav-cta{padding:.45rem 1rem;font-size:.6rem}
 }
