@@ -705,6 +705,26 @@ ScrollTrigger.matchMedia({
           // created yet at this point (see setupStage2Roll below), so
           // #cubeStageCta is still a plain, unwrapped body child.
           cubeStageCta.before(faceGrid);
+          // GSAP's default pin-spacing reserves #cubeStage's own natural
+          // height (900px) *in addition to* the pin's scroll distance
+          // (another 900px) for whatever comes after it — correct for a
+          // normal pin where new content follows, but faceGrid isn't new:
+          // it was already fully visible, filling the screen, at the
+          // moment the roll finished (that's the whole point of the
+          // roll). Landing it 1800px down re-scrolled the user through
+          // 900px of nothing to reach content they'd already seen — the
+          // "grid appears far below the edge of the cube" gap. Pulling it
+          // up by #cubeStage's own natural height (not
+          // window.innerHeight — GSAP locks an explicit inline height on
+          // #cubeStage itself for the life of the pin, so reading it back
+          // is exact regardless of viewport-unit quirks) cancels out
+          // exactly that redundant reservation without touching the pin's
+          // own scroll distance, which the scrub still genuinely needs
+          // (an earlier attempt at this used pinSpacing:false, which
+          // removed that distance too and left the roll unable to ever
+          // finish — the CTA became permanently unreachable since the
+          // page ran out of scroll room before the pin's own end point).
+          gsap.set(faceGrid, {marginTop: -stage.getBoundingClientRect().height});
           stage.classList.add('cube-done');
           // Only now, with faceGrid already sitting in its correct, final
           // position, do we know where #cubeStageCta really is — so CUBE
@@ -733,6 +753,7 @@ ScrollTrigger.matchMedia({
           // it fresh again rather than reusing anything stale.
           if (stage2Roll) { stage2Roll.kill(); stage2Roll = null; }
           faceGrid.classList.remove('face-released');
+          gsap.set(faceGrid, {clearProps:'marginTop'}); // undo onLeave's compensating negative margin — left in place it'd shift the re-pinned, absolutely-positioned face up by a full viewport and break the rotation
           stage.appendChild(faceGrid); // move it back inside #cubeStage so the pin/rotation can re-engage
           stage.classList.remove('cube-done');
         }
@@ -785,10 +806,17 @@ function setupStage2Roll() {
         gsap.set(faceCta, {clearProps:'all'});
         faceCta.classList.add('face-released');
         footer.before(faceCta); // <footer> is never itself a pin trigger, so it's always a safe, unwrapped anchor to insert before
+        // Same redundant-reservation gap as roll #1's onLeave (see that
+        // comment) — #cubeStageCta's own natural height gets reserved on
+        // top of its pin distance, so faceCta needs pulling up by
+        // #cubeStageCta's natural height to land flush instead of 900px
+        // low.
+        gsap.set(faceCta, {marginTop: -stage2.getBoundingClientRect().height});
         stage2.classList.add('cube-done');
       },
       onEnterBack: () => {
         faceCta.classList.remove('face-released');
+        gsap.set(faceCta, {clearProps:'marginTop'}); // undo the compensating margin — see roll #1's onEnterBack comment
         stage2.appendChild(faceCta);
         stage2.classList.remove('cube-done');
       }
@@ -805,6 +833,7 @@ function setupStage2Roll() {
     kill() {
       tl2.scrollTrigger.kill();
       faceCta.classList.remove('face-released');
+      gsap.set(faceCta, {clearProps:'marginTop'});
       stage2.appendChild(faceCta);
       stage2.classList.remove('cube-done');
     }
