@@ -159,19 +159,17 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
    mechanic as the header/grid one above (own pin, own scrub, own
    reparent-on-complete — see "CUBE ROLL #2" in <script>). The grid
    itself (44 cards, way taller than one viewport) can't be a single
-   rotating face the way a fixed-height cover section can, so a bare
-   cube mark stands in for it as the outgoing face — purely mechanical,
-   no message of its own. "Like what you see?" and "WANT ONE LIKE
-   THESE?" used to be split across two faces (outro rolling away to
-   reveal cta); now they're both part of the SAME incoming face
-   (.cube-face-cta), .cta-lead sitting just above the h2 — one message,
-   one face, matching the rest of the site's "one idea per face" cube
-   logic instead of introducing a middle step nothing else on the page
-   has. */
-.cube-face-outro{transform-origin:bottom center;z-index:2;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+   rotating face the way a fixed-height cover section can, so an empty
+   panel (background color only) stands in for it as the outgoing face —
+   purely mechanical, no content of its own; a cube mark used to sit here
+   but on a slow scroll it reads as a small icon adrift in a lot of blank
+   page rather than as "the cube's next face," so it's gone. "Like what
+   you see?" and "WANT ONE LIKE THESE?" are both part of the incoming
+   face (.cube-face-cta), .cta-lead sitting just above the h2 — one
+   message, one face. */
+.cube-face-outro{transform-origin:bottom center;z-index:2;background:var(--bg)}
 .cube-face-cta{transform-origin:top center;transform:rotateX(-90deg);z-index:1;overflow:hidden;display:flex;flex-direction:column;justify-content:center} /* centers .cta's own padding-driven block vertically within the full 100vh face, same reasoning as .page-header's centering above */
 .cube-stage.cube-done .cube-face-outro{display:none}
-.outro-cube{width:clamp(70px,9vw,110px);height:auto;opacity:.9}
 .cta-lead{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(1.3rem,3vw,1.8rem);letter-spacing:.03em;color:var(--text);margin-bottom:.6rem}
 
 /* PAGE HEADER — the front face of the cube above: a full-viewport "cover"
@@ -272,7 +270,7 @@ footer{padding:2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);le
   .cube-stage{perspective:none;height:auto}
   .cube-face{position:static!important;inset:auto;overflow:visible;will-change:auto}
   .cube-face-header,.cube-face-grid,.cube-face-outro,.cube-face-cta{transform:none!important}
-  .cube-face-outro{display:none} /* the bare cube mark only exists to be the second roll's outgoing face — on mobile there's no roll, so it'd just be a redundant icon sitting above the CTA (which already carries the full "Like what you see? / Want one like these?" message on its own, see .cta-lead) */
+  .cube-face-outro{display:none} /* only exists to be the second roll's empty outgoing face — on mobile there's no roll, so it'd just be an empty gap sitting above the CTA */
   .page-header{padding:120px 1.25rem 1.5rem;text-align:left;align-items:flex-start}
   .header-row{max-width:none}
   .scroll-hint-wrap{display:none} /* no room to pair it with the heading without crowding either one — the "swipe/scroll to browse" behavior is self-evident on a touchscreen anyway */
@@ -377,9 +375,7 @@ window.__ptStatusTimer = setTimeout(function() {
 </div>
 
 <div class="cube-stage cube-stage-cta" id="cubeStageCta">
-  <div class="cube-face cube-face-outro">
-    <img class="outro-cube" src="../Screenshots/cube-logo-upscaled-transparent.png" alt="">
-  </div>
+  <div class="cube-face cube-face-outro"></div>
   <div class="cube-face cube-face-cta">
     <section class="cta">
       <p class="cta-lead">Like what you see?</p>
