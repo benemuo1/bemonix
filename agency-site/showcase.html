@@ -152,24 +152,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .cube-face-header{transform-origin:bottom center;z-index:2}
 .cube-face-grid{transform-origin:top center;transform:rotateX(-90deg);z-index:1;overflow:hidden}
 .cube-stage.cube-done .cube-face-header{display:none}
-.face-released{position:static!important;overflow:visible!important;transform:none!important;will-change:auto} /* generic/self-referencing (not e.g. ".cube-stage.cube-done .cube-face-grid") on purpose, two reasons: once JS moves a face element OUT of its .cube-stage, an ancestor-scoped selector would stop matching it entirely; and it's shared across every cube-stage on the page (see .cube-stage-cta below), not just this one. !important because scrub:1's own internal smoothing can still write one or two more inline-transform ticks for a moment after onLeave/tl.progress(1) fires (see the JS comment) — inline always beats a plain class, but !important beats inline too */
-.cube-face-cta.face-released{min-height:100vh} /* .filters (sticky, inside .cube-face-grid) can only fully un-stick once its whole containing block has scrolled past the viewport — if the page's true bottom arrives before that happens (CTA + footer alone are shorter than a viewport on most screens), .filters is stranded mid-detach, stuck floating over the CTA for good since there's no more scroll room left to clear it. Forcing the released CTA to be at least one full viewport tall guarantees there's always enough trailing scroll distance to fully clear .filters first, on any screen height, without hardcoding a pixel buffer that would only work for some viewports */
-
-/* CUBE ROLL #2 — the grid-end and the CTA are a second cube, same
-   mechanic as the header/grid one above (own pin, own scrub, own
-   reparent-on-complete — see "CUBE ROLL #2" in <script>). The grid
-   itself (44 cards, way taller than one viewport) can't be a single
-   rotating face the way a fixed-height cover section can, so an empty
-   panel (background color only) stands in for it as the outgoing face —
-   purely mechanical, no content of its own; a cube mark used to sit here
-   but on a slow scroll it reads as a small icon adrift in a lot of blank
-   page rather than as "the cube's next face," so it's gone. "Like what
-   you see?" and "WANT ONE LIKE THESE?" are both part of the incoming
-   face (.cube-face-cta), .cta-lead sitting just above the h2 — one
-   message, one face. */
-.cube-face-outro{transform-origin:bottom center;z-index:2;background:var(--bg)}
-.cube-face-cta{transform-origin:top center;transform:rotateX(-90deg);z-index:1;overflow:hidden;display:flex;flex-direction:column;justify-content:center} /* centers .cta's own padding-driven block vertically within the full 100vh face, same reasoning as .page-header's centering above */
-.cube-stage.cube-done .cube-face-outro{display:none}
+.face-released{position:static!important;overflow:visible!important;transform:none!important;will-change:auto} /* generic/self-referencing (not e.g. ".cube-stage.cube-done .cube-face-grid") on purpose: once JS moves a face element OUT of its .cube-stage, an ancestor-scoped selector would stop matching it entirely. !important because scrub:1's own internal smoothing can still write one or two more inline-transform ticks for a moment after onLeave/tl.progress(1) fires (see the JS comment) — inline always beats a plain class, but !important beats inline too */
 .cta-lead{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(1.3rem,3vw,1.8rem);letter-spacing:.03em;color:var(--text);margin-bottom:.6rem}
 
 /* PAGE HEADER — the front face of the cube above: a full-viewport "cover"
@@ -208,7 +191,8 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .meta-num{font-family:'Jost',sans-serif;font-weight:600;font-size:2.2rem;color:var(--accent);line-height:1}
 .meta-lbl{font-size:.6rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:.2rem}
 
-.filters{padding:1.5rem 3rem;border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1;display:flex;gap:.6rem;flex-wrap:wrap;background:var(--bg);position:sticky;top:90px;z-index:100} /* No longer JS-revealed on its own delay — it's part of .cube-face-grid's content now, so it just rotates into view together with the grid tiles as one unit (see the "CUBE ROLL" comment). position:sticky pins it below the nav while scrolling through the grid once the roll has handed off to normal flow, and — because sticky can only ever stick as far as its own normal-flow position, never past it — scrolling back up to "Our Work" naturally un-sticks it with zero extra code. */
+.filters{padding:1.5rem 3rem;border-bottom:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1;display:flex;gap:.6rem;flex-wrap:wrap;background:var(--bg);position:relative;z-index:100} /* No longer JS-revealed on its own delay — it's part of .cube-face-grid's content now, so it just rotates into view together with the grid tiles as one unit (see the "CUBE ROLL" comment). position:relative (not sticky) by default on purpose — see .face-released .filters below for why */
+.face-released .filters{position:sticky;top:90px} /* position:sticky only starts behaving here, once the grid has actually released from .cube-face-grid's rotateX transform — sticky's "stick to the viewport" math breaks down while any ancestor still has a transform applied (a well-known CSS interaction, not a bug in this rule), which mid-roll was making the bar stick at some arbitrary in-between point and visually overlap a couple of card rows instead of sitting cleanly at the top of the settled grid. Sticky pins it below the nav while scrolling through the grid once the roll has hand off to normal flow, and — because sticky can only ever stick as far as its own normal-flow position, never past it — scrolling back up to "Our Work" naturally un-sticks it with zero extra code. */
 .filter-btn{padding:.35rem 1rem;border:1px solid var(--surface);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all .25s}
 .filter-btn:hover{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);border-color:var(--gold);color:var(--gold)}
 .filter-btn.active{background:var(--accent) repeating-linear-gradient(45deg,rgba(255,255,255,.1) 0 2px,transparent 2px 6px);border-color:var(--gold);color:var(--gold)}
@@ -244,7 +228,7 @@ nav.nav-open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45
 .viewer-nav span{font-size:.6rem;color:var(--muted);letter-spacing:.1em;min-width:3rem;text-align:center}
 .viewer-frame{flex:1;border:none;width:100%}
 
-.cta{padding:10rem 3rem;text-align:center;border-top:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1}
+.cta{padding:10rem 3rem;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;justify-content:center;text-align:center;border-top:1px solid rgba(201,162,39,.35);border-image:linear-gradient(90deg,transparent,var(--gold),transparent) 1} /* min-height:100vh isn't a design choice, it's load-bearing: .filters (sticky, inside .cube-face-grid above) can only fully un-stick once its whole containing block has scrolled past the viewport. .cta + footer alone are shorter than a viewport on most screens, so without this, .filters gets stranded mid-detach once the page runs out of scroll room to clear it — it stays floating over .cta for good instead of releasing. Forcing .cta to be at least one full viewport tall guarantees enough trailing scroll distance on any screen height, without hardcoding a pixel buffer that would only work for some viewports; the flex centering keeps the actual content vertically centered within that taller box instead of jammed at the top */
 .cta h2{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(3rem,8vw,7rem);letter-spacing:.03em;line-height:.9}
 .cta h2 span{color:var(--accent)}
 .cta p{color:var(--muted);font-size:.85rem;margin-top:1.5rem;font-weight:200}
@@ -269,8 +253,7 @@ footer{padding:2rem 3rem;text-align:center;font-size:.6rem;color:var(--muted);le
 @media(max-width:640px){
   .cube-stage{perspective:none;height:auto}
   .cube-face{position:static!important;inset:auto;overflow:visible;will-change:auto}
-  .cube-face-header,.cube-face-grid,.cube-face-outro,.cube-face-cta{transform:none!important}
-  .cube-face-outro{display:none} /* only exists to be the second roll's empty outgoing face — on mobile there's no roll, so it'd just be an empty gap sitting above the CTA */
+  .cube-face-header,.cube-face-grid{transform:none!important}
   .page-header{padding:120px 1.25rem 1.5rem;text-align:left;align-items:flex-start}
   .header-row{max-width:none}
   .scroll-hint-wrap{display:none} /* no room to pair it with the heading without crowding either one — the "swipe/scroll to browse" behavior is self-evident on a touchscreen anyway */
@@ -374,20 +357,15 @@ window.__ptStatusTimer = setTimeout(function() {
   </div>
 </div>
 
-<div class="cube-stage cube-stage-cta" id="cubeStageCta">
-  <div class="cube-face cube-face-outro"></div>
-  <div class="cube-face cube-face-cta">
-    <section class="cta">
-      <p class="cta-lead">Like what you see?</p>
-      <h2>WANT ONE<br>LIKE <span>THESE?</span></h2>
-      <p>Tell us about your project and we'll get back within 24 hours.</p>
-      <div class="cta-links">
-        <a href="mailto:hello@bemonixagency.co">hello@bemonixagency.co</a>
-        <a href="contact.html">Start a Project</a>
-      </div>
-    </section>
+<section class="cta">
+  <p class="cta-lead">Like what you see?</p>
+  <h2>WANT ONE<br>LIKE <span>THESE?</span></h2>
+  <p>Tell us about your project and we'll get back within 24 hours.</p>
+  <div class="cta-links">
+    <a href="mailto:hello@bemonixagency.co">hello@bemonixagency.co</a>
+    <a href="contact.html">Start a Project</a>
   </div>
-</div>
+</section>
 
 <footer>© 2026 BEMONIX · HOUSTON, TX · REMOTE WORLDWIDE</footer>
 
@@ -679,15 +657,11 @@ gsap.from('.page-header p, .header-meta', {y:30, opacity:0, duration:.8, stagger
 // fire and move the element before the tween had actually finished
 // interpolating to rotateX(0)/yPercent(0), moving something still very
 // slightly tilted.
-// stage2Roll holds CUBE ROLL #2's own { kill() } once it's been created —
-// see this roll's onLeave/onEnterBack below and setupStage2Roll() further
-// down for why it's built lazily instead of up front.
-let stage2Roll = null;
 ScrollTrigger.matchMedia({
   '(min-width: 641px)': function() {
     const stage = document.getElementById('cubeStage');
     const faceGrid = document.querySelector('.cube-face-grid');
-    const cubeStageCta = document.getElementById('cubeStageCta');
+    const cta = document.querySelector('.cta');
     const tl = gsap.timeline({
       scrollTrigger:{
         trigger:'#cubeStage', start:'top top', end:'+=100%', scrub:1, pin:true, anticipatePin:1,
@@ -699,12 +673,9 @@ ScrollTrigger.matchMedia({
           // itself wrapped in a pin-spacer div by ScrollTrigger, and
           // "after stage" just lands faceGrid as a sibling of #cubeStage
           // WITHIN that spacer — still trapped inside the spacer's own
-          // fixed-size box. #cubeStageCta is a perfectly safe target to
-          // insert before, same as the original single-roll version of
-          // this page did with .cta — CUBE ROLL #2's own pin/spacer isn't
-          // created yet at this point (see setupStage2Roll below), so
-          // #cubeStageCta is still a plain, unwrapped body child.
-          cubeStageCta.before(faceGrid);
+          // fixed-size box. .cta is a plain, never-pinned element, so
+          // it's always a safe, unwrapped target to insert before.
+          cta.before(faceGrid);
           // GSAP's default pin-spacing reserves #cubeStage's own natural
           // height (900px) *in addition to* the pin's scroll distance
           // (another 900px) for whatever comes after it — correct for a
@@ -721,37 +692,11 @@ ScrollTrigger.matchMedia({
           // exactly that redundant reservation without touching the pin's
           // own scroll distance, which the scrub still genuinely needs
           // (an earlier attempt at this used pinSpacing:false, which
-          // removed that distance too and left the roll unable to ever
-          // finish — the CTA became permanently unreachable since the
-          // page ran out of scroll room before the pin's own end point).
+          // removed that distance too and broke the pin outright).
           gsap.set(faceGrid, {marginTop: -stage.getBoundingClientRect().height});
           stage.classList.add('cube-done');
-          // Only now, with faceGrid already sitting in its correct, final
-          // position, do we know where #cubeStageCta really is — so CUBE
-          // ROLL #2's ScrollTrigger is created for the first time right
-          // here, against already-correct layout, rather than being
-          // created eagerly at page load (before the grid existed in flow
-          // at all) and then having to reposition it later. That "create
-          // early, refresh later" approach is what used to live here, and
-          // it kept breaking: refreshing a pin's start/end after the fact
-          // forces a synchronous layout recalculation, and doing that
-          // reliably in sync with wherever a real scroll gesture (with its
-          // own momentum/inertia) happens to be mid-flight is exactly the
-          // kind of timing race that was leaving the roll stuck mid-
-          // animation with the page gone blank. Creating a trigger once,
-          // correctly, sidesteps that class of bug entirely — there's no
-          // stale position to correct because nothing is ever created
-          // before its layout is real.
-          if (!stage2Roll) stage2Roll = setupStage2Roll();
         },
         onEnterBack: () => {
-          // Tear roll #2 all the way back down first, whatever state it's
-          // currently in (idle, mid-roll, or fully done — a fast scroll
-          // back up can jump straight past it) — see its kill() — so
-          // faceGrid moving back inside #cubeStage below always starts
-          // from a clean slate, and a later re-entry into roll #2 creates
-          // it fresh again rather than reusing anything stale.
-          if (stage2Roll) { stage2Roll.kill(); stage2Roll = null; }
           faceGrid.classList.remove('face-released');
           gsap.set(faceGrid, {clearProps:'marginTop'}); // undo onLeave's compensating negative margin — left in place it'd shift the re-pinned, absolutely-positioned face up by a full viewport and break the rotation
           stage.appendChild(faceGrid); // move it back inside #cubeStage so the pin/rotation can re-engage
@@ -763,11 +708,7 @@ ScrollTrigger.matchMedia({
     tl.to('.cube-face-header', {rotateX:90,  yPercent:-100, ease:'none', duration:1}, 0)
       .to(faceGrid,            {rotateX:0,   yPercent:0,    ease:'none', duration:1}, 0)
       .to('#scrollHint',       {opacity:0,   ease:'none', duration:.3}, 0);
-    return () => {
-      tl.scrollTrigger.kill();
-      stage.classList.remove('cube-done');
-      if (stage2Roll) { stage2Roll.kill(); stage2Roll = null; }
-    };
+    return () => { tl.scrollTrigger.kill(); stage.classList.remove('cube-done'); };
   }
 });
 gsap.from('#scrollHint', {opacity:0, duration:.8, delay:1.2});
@@ -778,67 +719,14 @@ gsap.utils.toArray('.card').forEach((card, i) => {
   });
 });
 
-// ── CUBE ROLL #2 — grid-end and CTA as a second cube (desktop only) ─────────
-// Same mechanic/geometry as the header/grid cube above (see its CSS and JS
-// comments for the full explanation of the hinge alignment, reparent-on-
-// complete handoff, and why the scrub needs tl.progress(1) before moving
-// anything) — just with .cube-face-outro standing in for .cube-face-header
-// and .cube-face-cta standing in for .cube-face-grid. Superseded the old
-// plain scroll-triggered `gsap.from('.cta h2', ...)` fade-in that used to
-// live here — the roll itself is the CTA's entrance now.
-//
-// Deliberately a plain function, not its own ScrollTrigger.matchMedia block
-// like roll #1 above — #cubeStageCta's true position on the page depends on
-// roll #1 having already reparented the grid in front of it, so this is
-// only ever called lazily, from roll #1's onLeave, at the exact moment
-// that's true (see the comment there). Desktop-only is already guaranteed
-// by that: this only ever runs from inside roll #1's own
-// '(min-width: 641px)' matchMedia callback.
-function setupStage2Roll() {
-  const stage2 = document.getElementById('cubeStageCta');
-  const faceCta = document.querySelector('.cube-face-cta');
-  const footer = document.querySelector('footer');
-  const tl2 = gsap.timeline({
-    scrollTrigger:{
-      trigger:'#cubeStageCta', start:'top top', end:'+=100%', scrub:1, pin:true, anticipatePin:1,
-      onLeave: () => {
-        tl2.progress(1);
-        gsap.set(faceCta, {clearProps:'all'});
-        faceCta.classList.add('face-released');
-        footer.before(faceCta); // <footer> is never itself a pin trigger, so it's always a safe, unwrapped anchor to insert before
-        // Same redundant-reservation gap as roll #1's onLeave (see that
-        // comment) — #cubeStageCta's own natural height gets reserved on
-        // top of its pin distance, so faceCta needs pulling up by
-        // #cubeStageCta's natural height to land flush instead of 900px
-        // low.
-        gsap.set(faceCta, {marginTop: -stage2.getBoundingClientRect().height});
-        stage2.classList.add('cube-done');
-      },
-      onEnterBack: () => {
-        faceCta.classList.remove('face-released');
-        gsap.set(faceCta, {clearProps:'marginTop'}); // undo the compensating margin — see roll #1's onEnterBack comment
-        stage2.appendChild(faceCta);
-        stage2.classList.remove('cube-done');
-      }
-    }
-  });
-  gsap.set(faceCta, {yPercent:100});
-  tl2.to('.cube-face-outro', {rotateX:90, yPercent:-100, ease:'none', duration:1}, 0)
-     .to(faceCta,            {rotateX:0,  yPercent:0,    ease:'none', duration:1}, 0);
-  return {
-    // Killing a pinned ScrollTrigger reverts the pin and removes its
-    // spacer by default, which is exactly what makes it safe to call
-    // setupStage2Roll() again later and have it create a fresh trigger
-    // against #cubeStageCta as a plain, unwrapped element again.
-    kill() {
-      tl2.scrollTrigger.kill();
-      faceCta.classList.remove('face-released');
-      gsap.set(faceCta, {clearProps:'marginTop'});
-      stage2.appendChild(faceCta);
-      stage2.classList.remove('cube-done');
-    }
-  };
-}
+// CTA — plain scroll-triggered reveal, no pin/roll of its own (that was
+// tried and dropped: a second full-viewport pin/rotate purely for this
+// short section kept costing more in edge cases — pin-spacer gaps, a
+// dead-feeling mid-rotation stretch with nothing on screen — than the
+// effect was worth for a section this size). Same pattern the CTA on
+// every other page of the site already uses.
+gsap.from('.cta-lead, .cta h2',              {scrollTrigger:{trigger:'.cta',start:'top 70%'}, y:50, opacity:0, duration:1, stagger:.15});
+gsap.from('.cta p:not(.cta-lead), .cta-links a', {scrollTrigger:{trigger:'.cta',start:'top 65%'}, y:20, opacity:0, stagger:.12, duration:.6, delay:.3});
 </script>
 </body>
 </html>
